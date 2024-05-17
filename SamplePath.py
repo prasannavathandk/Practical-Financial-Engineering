@@ -1,17 +1,32 @@
 from abc import ABC, abstractmethod
+import multiprocessing
+import subprocess
+import sys
 import Helper
 
 class SamplePath(ABC):
 
+    def __init__(self) -> None:
+        _numThreads = multiprocessing.cpu_count()
+        self.threadPool = multiprocessing.Pool(processes = _numThreads)
+        print("Computing parallel with", _numThreads, "processes")
+        
     #can be implemented using spot or forward measure
     @abstractmethod
-    def drift(self):
+    def genDrift(self):
         pass
 
     #Implementation of martingale discretization
     @abstractmethod
     def martingaleDrift(self):
         pass
+
+    def drift(self):
+        print("SpotMeasure.drift")
+        if type == 1:
+            return self.martingaleDrift()
+        else:
+            return self.genDrift()
 
     #can be determinstic
     @abstractmethod
@@ -46,26 +61,17 @@ class SamplePath(ABC):
         self._it = value
 
     #Entry function for simulation
-    @abstractmethod
-    def simulate(self, type):
+    def simulate(self):
         print("SamplePath.simulate")
-        if type == 0:
-            return self.generateSP
-        elif type == 1:
-            return self.generateSPmartingale
+        result = []
+        for i in range(self.iter):
+            result.append(self.threadPool.apply_async(func=self.generateSP))
 
     #Generate the number of sample paths
     def generateSP(self):
         print("SamplePath.generateSP")
-        for i in range(iter):
-            drift = self.drift()
-            self.eulerScheme(drift)
-    
-    def generateSPmartingale(self):
-        print("SamplePath.generateSPmartingale")
-        for i in range(iter):
-            drift = self.martingaleDrift()
-            self.eulerScheme(drift)
+        drift = self.drift()
+        self.eulerScheme(drift)
 
     #eulers scheme to implement a simgle sample path for the SDE
     def eulerScheme(self, drift):

@@ -2,16 +2,18 @@ from SamplePath import SamplePath
 
 class ForwardMeasure(SamplePath):
 
-    def __init__(self, iter = 1000):
+    def __init__(self, iter = 1000, type = 0):
+        super().__init__()
         self._it = iter
+        self.type = type
         pass
 
-    #calculate drift under forward measure for a certain index
-    def drift(self):
+    #calculate drift under forward measure for a certain index, type = 0
+    def genDrift(self):
         print("ForwardMeasure.drift")
         pass
 
-    #calculate drift under martingale discretization
+    #calculate drift under martingale discretization, type = 1
     def martingaleDrift(self):
         print("ForwardMeasure.martingaleDrift")
         pass
@@ -19,8 +21,3 @@ class ForwardMeasure(SamplePath):
     def volatility(self):
         print("ForwardMeasure.volatility")
         pass
-
-    #Entry point to class
-    def simulate(self, type):
-        print("ForwardMeasure.simulate")
-        super().simulate(type)

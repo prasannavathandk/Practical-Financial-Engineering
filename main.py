@@ -4,13 +4,13 @@ import Helper as hp
 
 def execute():  
     print("main.execute()")  
-    mySM = SpotMeasure.SpotMeasure()
-    SMsim = mySM.simulate(type = 0)
+    mySM = SpotMeasure.SpotMeasure(type = 0)
+    SMsim = mySM.simulate()
     hp.unitTest(mySM)
     hp.plotSP(SMsim)
-    myFM = ForwardMeasure.ForwardMeasure()
+    myFM = ForwardMeasure.ForwardMeasure(type = 1)
     hp.unitTest(myFM)
-    FMsim = myFM.simulate(type = 1)
+    FMsim = myFM.simulate()
     hp.plotSP(FMsim)
 
 def main():

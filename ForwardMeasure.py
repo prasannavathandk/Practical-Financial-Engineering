@@ -2,11 +2,8 @@ from SamplePath import SamplePath
 
 class ForwardMeasure(SamplePath):
 
-    def __init__(self, iter = 2, type = 0):
-        super().__init__()
-        self._it = iter
-        self.type = type
-        pass
+    def __init__(self, maturity, iter = 1000, grid = 2, type = 0):
+        super().__init__(maturity=maturity, iter = iter, grid = grid, type = type)
 
     #calculate drift under forward measure for a certain index, type = 0
     def genDrift(self):

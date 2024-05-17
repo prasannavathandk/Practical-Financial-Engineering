@@ -13,3 +13,8 @@ def plotSP(data):
 def unitTest(myClass):
     print("Helper.unitTest")
     pass
+
+def discretize(arr, num):
+    for i in range(num):
+        arr = np.sort(np.concatenate([arr, np.subtract(arr,np.gradient(arr)/2)]))
+    return arr

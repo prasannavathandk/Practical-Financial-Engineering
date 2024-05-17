@@ -5,7 +5,15 @@ import sys
 import Helper as hp
 
 class SamplePath(ABC):
-        
+
+    def __init__(self, maturity, iter = 10, grid = 2, type = 0) -> None:
+        self._it = iter
+        self._gr = grid
+        self.type = type
+        self._mg = maturity
+        self._tg = hp.discretize(self._mg, self._gr)
+        print(self._tg)
+
     #can be implemented using spot or forward measure
     @abstractmethod
     def genDrift(self):
@@ -55,6 +63,14 @@ class SamplePath(ABC):
     def iter(self, value):
         self._it = value
 
+    #Number of grid discritization
+    @property
+    def grid(self):
+        return self._gr
+    
+    @grid.setter
+    def grid(self, value):
+        self._gr = value
 
     result = []
     def log_results(self, res):

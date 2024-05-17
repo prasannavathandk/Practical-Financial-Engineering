@@ -1,7 +1,7 @@
 import numpy as np
 
 #a vector of standard normal variables
-def stdNormal(self, num):
+def stdNormal(num):
     return np.random.normal(0, 1, num)
 
 #plot function

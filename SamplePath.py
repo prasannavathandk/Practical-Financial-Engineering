@@ -2,14 +2,9 @@ from abc import ABC, abstractmethod
 import multiprocessing
 import subprocess
 import sys
-import Helper
+import Helper as hp
 
 class SamplePath(ABC):
-
-    def __init__(self) -> None:
-        _numThreads = multiprocessing.cpu_count()
-        self.threadPool = multiprocessing.Pool(processes = _numThreads)
-        print("Computing parallel with", _numThreads, "processes")
         
     #can be implemented using spot or forward measure
     @abstractmethod
@@ -22,11 +17,11 @@ class SamplePath(ABC):
         pass
 
     def drift(self):
-        print("SpotMeasure.drift")
-        if type == 1:
-            return self.martingaleDrift()
+        print("SamplePath.drift")
+        if self.type == 1:
+            return self.martingaleDrift
         else:
-            return self.genDrift()
+            return self.genDrift
 
     #can be determinstic
     @abstractmethod
@@ -60,26 +55,38 @@ class SamplePath(ABC):
     def iter(self, value):
         self._it = value
 
+
+    result = []
+    def log_results(self, res):
+        self.result.append(res)
+
     #Entry function for simulation
     def simulate(self):
-        print("SamplePath.simulate")
-        result = []
-        for i in range(self.iter):
-            result.append(self.threadPool.apply_async(func=self.generateSP))
+        print("SamplePath.simulate")  
+        """
+         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as tp:
+            for i in range(self.iter):
+                tp.apply_async(func=self.generateSP, callback=self.log_results) 
+        """
 
+        self.log_results(self.generateSP())
+        self.processSP()
+    
     #Generate the number of sample paths
     def generateSP(self):
         print("SamplePath.generateSP")
-        drift = self.drift()
-        self.eulerScheme(drift)
+        drift = self.drift()()
+        return self.eulerScheme(drift)
 
     #eulers scheme to implement a simgle sample path for the SDE
     def eulerScheme(self, drift):
         print("SamplePath.eulerScheme")
         n = 10
-        N = self.stdNormal(n)
+        N = hp.stdNormal(num=n)
+        return drift
     
     #Summary from the sample paths
     def processSP(self):
         print("SamplePath.processSP")
-        pass
+        print(len(self.result))
+        print(self.result)

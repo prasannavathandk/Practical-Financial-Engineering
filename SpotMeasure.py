@@ -11,13 +11,13 @@ class SpotMeasure(SamplePath):
     #calculate drift under spot measure for a certain index, type = 0
     def genDrift(self):
         print("SpotMeasure.genDrift")
-        pass
+        return 0.25
 
     #calculate drift under martingale discretization, type = 1
     def martingaleDrift(self):
         print("SpotMeasure.martingaleDrift")
-        pass
+        return .50
 
     def volatility(self):
         print("SpotMeasure.volatility")
-        pass
+        return 0.75

@@ -5,11 +5,11 @@ import multiprocessing
 import subprocess
 import sys
 import Helper as hp
+import numpy as np
 
 class LIBORModel(ModelInterface):
 
-    def __init__(self, maturity, iter = 10, grid = 2, type = 0) -> None:
-        self._it = iter
+    def __init__(self, maturity, grid = 2, type = 0) -> None:
         self._gr = grid
         self.type = type
         self._mg = maturity
@@ -41,5 +41,12 @@ class LIBORModel(ModelInterface):
             return self.martingaleDrift
         else:
             return self.genDrift
+        
+    def randomness(self):
+        return hp.stdNormal
+
+    def SDE(self, curVal, step, rv, index):
+        return curVal + self.drift()()*step + self.volatility()*np.sqrt(step)*rv
+
         
         

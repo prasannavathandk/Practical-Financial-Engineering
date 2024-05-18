@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 #a vector of standard normal variables
@@ -7,6 +8,7 @@ def stdNormal(num):
 #plot function
 def plotSP(data):
     print("Helper.plotSP")
+    plt.plot(data)
     pass
 
 #test individuals function calls from the class
@@ -18,3 +20,6 @@ def discretize(arr, num):
     for i in range(num):
         arr = np.sort(np.concatenate([arr, np.add(arr,np.concatenate([np.diff(arr)/2,[0]]))]))
     return arr
+
+def show():
+    plt.show()

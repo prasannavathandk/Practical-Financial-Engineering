@@ -11,6 +11,16 @@ class ModelInterface(ABC):
     def volatility(self, type):
         pass
 
+    #can be determinstic
+    @abstractmethod
+    def randomness(self, type):
+        pass
+
+    #can be determinstic
+    @abstractmethod
+    def SDE(self, curVal, mu, sigma, step, rv):
+        pass
+
     #Discrtization of time component
     @property 
     def timeGrid(self): 
@@ -18,4 +28,4 @@ class ModelInterface(ABC):
 
     @timeGrid.setter
     def timeGrid(self, value):
-        self._tg = value
+        self._tg = value 

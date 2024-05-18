@@ -2,18 +2,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #a vector of standard normal variables
-def stdNormal(num):
+def stdNormal(_,num):
     return np.random.normal(0, 1, num)
 
 #plot function
 def plotSP(data):
-    print("Helper.plotSP")
-    plt.plot(data)
-    pass
+    for dat in data:
+        plt.plot(dat)
 
 #test individuals function calls from the class
 def unitTest(myClass):
-    print("Helper.unitTest")
     pass
 
 def discretize(arr, num):
@@ -21,5 +19,5 @@ def discretize(arr, num):
         arr = np.sort(np.concatenate([arr, np.add(arr,np.concatenate([np.diff(arr)/2,[0]]))]))
     return arr
 
-def show():
+def plot():
     plt.show()

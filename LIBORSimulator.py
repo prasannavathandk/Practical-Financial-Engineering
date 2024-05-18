@@ -1,14 +1,19 @@
-import SpotMeasure
-import ForwardMeasure
+from BM import BrownianMotion
+import SpotMeasure as SM
+import ForwardMeasure as FM
 from NumericalSolver import EulerScheme
+import Helper as hp
 
 class LIBORSim(EulerScheme):
 
-    def __init__(self, maturity, iter = 10, measure=0, type=0):
+    def __init__(self, maturity, iter = 10, scale = 2, measure=0, type=0, test=False):
         if(measure == 1):
-            super().__init__(ForwardMeasure.ForwardMeasure(type = 1, maturity=maturity), iter)
-        else:
-            super().__init__(SpotMeasure.SpotMeasure(type = 0, maturity=maturity), iter)
+            model=FM.ForwardMeasure(type = 1, maturity=maturity, scale=scale)
+        else:    
+            model=SM.SpotMeasure(type = 0, maturity=maturity, scale=scale)
+        if(test):
+            model = BrownianMotion(timeGrid=maturity,scale=scale)
+        super().__init__(model=model, iter=iter, distribution=model.distribution, sde=model.SDE)    
 
     def simulate(self):
         """
@@ -16,4 +21,9 @@ class LIBORSim(EulerScheme):
             for i in range(self.iter):
                 tp.apply_async(func=self.generateSP, callback=self.log_results) 
         """
-        self.execute()
+        result = self.execute()
+        self.processSP(result)
+
+     #Summary from the sample paths
+    def processSP(self, result):
+        hp.plotSP(result)    

@@ -9,13 +9,16 @@ import numpy as np
 
 class LIBORModel(ModelInterface):
 
-    def __init__(self, maturity, grid = 2, type = 0) -> None:
-        self._gr = grid
+    def __init__(self, maturity, scale, type = 0) -> None:
         self.type = type
         self._mg = maturity
-        self._tg = hp.discretize(self._mg, self._gr)
-        print(self._tg)
+        self._tg = hp.discretize(self._mg, scale)
 
+    distribution = hp.stdNormal
+        
+    def SDE(self, curVal, step, rv, index):         #SDE according to eulers scheme
+        return 0
+    
     #Implementation of martingale discretization
     @abstractmethod
     def genDrift(self):
@@ -36,17 +39,10 @@ class LIBORModel(ModelInterface):
         self._mg = value
 
     def drift(self):
-        print("SamplePath.drift")
         if self.type == 1:
             return self.martingaleDrift
         else:
             return self.genDrift
-        
-    def randomness(self):
-        return hp.stdNormal
-
-    def SDE(self, curVal, step, rv, index):
-        return curVal + self.drift()()*step + self.volatility()*np.sqrt(step)*rv
 
         
         

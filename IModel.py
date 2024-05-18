@@ -13,7 +13,7 @@ class ModelInterface(ABC):
 
     #can be determinstic
     @abstractmethod
-    def randomness(self, type):
+    def distribution(self, type):
         pass
 
     #can be determinstic

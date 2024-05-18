@@ -13,7 +13,8 @@ class LIBORSim(EulerScheme):
             model=SM.SpotMeasure(type = 0, maturity=maturity, scale=scale)
         if(test):
             model = BrownianMotion(timeGrid=maturity,scale=scale)
-        super().__init__(model=model, iter=iter)  
+        super().__init__(model=model, iter=iter)
+
 
     def simulate(self):
         result = self.execute()
@@ -21,4 +22,6 @@ class LIBORSim(EulerScheme):
 
      #Summary from the sample paths
     def processSP(self, result):
-        hp.plotSP(result)    
+        #print(result)
+        hp.plotSP(result)
+        

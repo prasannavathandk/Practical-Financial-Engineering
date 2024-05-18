@@ -1,8 +1,11 @@
+import functools
+import threading
 import matplotlib.pyplot as plt
 import numpy as np
+import time  
 
 #a vector of standard normal variables
-def stdNormal(_,num):
+def stdNormal(num):
     return np.random.normal(0, 1, num)
 
 #plot function
@@ -11,6 +14,13 @@ def plotSP(data):
     for dat in data:
         plt.plot(dat)
 
+class timer:     
+    tick = 0  
+    def start(self):
+        self.tick = time.time()
+    def stop(self):
+        print("--- %s seconds ---" % (time.time() - self.tick)) 
+       
 #test individuals function calls from the class
 def unitTest(myClass):
     pass
@@ -22,3 +32,11 @@ def discretize(arr, num):
 
 def plot():
     plt.show()
+
+def synchronized(wrapped):
+    lock = threading.Lock()
+    @functools.wraps(wrapped)
+    def _wrap(*args, **kwargs):
+        with lock:
+            return wrapped(*args, **kwargs)
+    return _wrap

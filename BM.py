@@ -16,4 +16,4 @@ class  BrownianMotion(ModelInterface):
         return 0.75
     
     def drift(self):
-        return .33
+        return .1

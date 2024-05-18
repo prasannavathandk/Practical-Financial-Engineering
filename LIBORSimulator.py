@@ -13,14 +13,9 @@ class LIBORSim(EulerScheme):
             model=SM.SpotMeasure(type = 0, maturity=maturity, scale=scale)
         if(test):
             model = BrownianMotion(timeGrid=maturity,scale=scale)
-        super().__init__(model=model, iter=iter, distribution=model.distribution, sde=model.SDE)    
+        super().__init__(model=model, iter=iter)  
 
     def simulate(self):
-        """
-            with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as tp:
-            for i in range(self.iter):
-                tp.apply_async(func=self.generateSP, callback=self.log_results) 
-        """
         result = self.execute()
         self.processSP(result)
 

@@ -7,6 +7,7 @@ def stdNormal(_,num):
 
 #plot function
 def plotSP(data):
+    #Remove loop and implement direct plot
     for dat in data:
         plt.plot(dat)
 

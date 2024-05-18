@@ -5,14 +5,14 @@ import numpy as np
 
 class EulerScheme:
 
-    def __init__(self, model, iter, sde, distribution) -> None:
+    def __init__(self, model, iter) -> None:
         if(isinstance(model, ModelInterface)):
             self._model = model
         else:
             raise TypeError()  
         self._it = iter
-        self._sde = sde
-        self._dist = distribution
+        self._sde = model.SDE
+        self._dist = model.distribution
 
     @property 
     def model(self):
@@ -59,21 +59,31 @@ class EulerScheme:
     def grid(self, value):
         self._gr = value
 
-    result = []
+    result = []         #change data type
     def log_results(self, res):
         self.result.append(res)
 
     #Generate the number of sample paths
-    def generateSP(self):
+    def SamplePath(self):
         timeGrid = self.model.timeGrid
         n = len(timeGrid)
         value = np.zeros(n)
-        N = self.distribution(n)        
+        N = self.distribution(n)
+        #avoid loop and implement cholesky factorization?        
         for i in range(n-1):
             value[i+1] = self.SDE(curVal=value[i], step=(timeGrid[i+1] - timeGrid[i]),rv = N[i+1], index = i+1)
-        return value
+        self.log_results(value)
                
-    def execute(self):
+    def engine(self):
+        """
+            with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as tp:
+            for i in range(self.iter):
+                tp.apply_async(func=self.SamplePath, callback=self.log_results) 
+        """
+        #Parallelize loop to speed up
         for i in range(self.iter):
-            self.log_results(self.generateSP())
+            self.SamplePath()
+           
+    def execute(self):
+        self.engine()
         return self.result

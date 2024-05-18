@@ -16,5 +16,5 @@ def unitTest(myClass):
 
 def discretize(arr, num):
     for i in range(num):
-        arr = np.sort(np.concatenate([arr, np.subtract(arr,np.gradient(arr)/2)]))
+        arr = np.sort(np.concatenate([arr, np.add(arr,np.concatenate([np.diff(arr)/2,[0]]))]))
     return arr

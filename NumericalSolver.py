@@ -1,10 +1,26 @@
 import Helper as hp
+from IModel import ModelInterface
+from abc import ABC, abstractmethod
 import multiprocessing
 
-class NumericalEngine:
+class EulerScheme(ABC):
 
-    def __init__(self, drift):
-        self.drift = drift
+    def __init__(self, model) -> None:
+        if(isinstance(model, ModelInterface)):
+            self._model = model
+        else:
+            raise TypeError()  
+
+    @property 
+    def model(self):
+        return self._model
+
+    @model.setter
+    def model(self, value):
+        if(isinstance(value, ModelInterface)):
+            self._model = value
+        else:
+            raise TypeError()                 
 
     #Number of sample paths
     @property
@@ -31,15 +47,10 @@ class NumericalEngine:
     #Generate the number of sample paths
     def generateSP(self):
         print("SamplePath.generateSP")
-        drift = self.drift()
-        return self.eulerScheme(drift)
-
-    #eulers scheme to implement a simgle sample path for the SDE
-    def eulerScheme(self, drift):
-        print("SamplePath.eulerScheme")
+        drift = self.model.drift()
         n = 10
         N = hp.stdNormal(num=n)
-        return drift
+        return drift        
     
     #Summary from the sample paths
     def processSP(self):
@@ -47,6 +58,6 @@ class NumericalEngine:
         print(len(self.result))
         print(self.result)
 
-    def start(self):
+    def execute(self):
         self.log_results(self.generateSP())
         self.processSP()   

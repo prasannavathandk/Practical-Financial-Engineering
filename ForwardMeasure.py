@@ -1,6 +1,6 @@
-from SamplePath import SamplePath
+from LIBORMarketModel import LIBORModel
 
-class ForwardMeasure(SamplePath):
+class ForwardMeasure(LIBORModel):
 
     def __init__(self, maturity, iter = 1000, grid = 2, type = 0):
         super().__init__(maturity=maturity, iter = iter, grid = grid, type = type)

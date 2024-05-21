@@ -21,6 +21,11 @@ class ModelInterface(ABC):
     def SDE(self, curVal, mu, sigma, step, rv):
         pass
 
+    #if applicable
+    @abstractmethod
+    def choleskyFactor(self):
+         pass  
+
     #Discrtization of time component
     @property 
     def timeGrid(self): 

@@ -9,26 +9,28 @@ import numpy as np
 
 class LIBORModel(ModelInterface):
 
-    def __init__(self, maturity, scale, type = 0) -> None:
+    def __init__(self, maturity, prices, scale, type = 0) -> None:
         self.type = type
         self._mg = maturity
+        self._bp = prices
         self._tg = hp.discretize(self._mg, scale)
 
     distribution = hp.stdNormal
-        
+
+    def drift(self):
+        if self.type == 1:
+            return self.martingaleDrift
+        else:
+            return self.genDrift
+          
     def SDE(self, curVal, step, rv, index):         #SDE according to eulers scheme
-        return 0
+        mu = self.drift()
+        sigma = self.volatility()
+        return curVal + sigma*curVal*step + curVal*np.sqrt(step)*np.dot(sigma, rv) 
     
-    #Implementation of martingale discretization
-    @abstractmethod
-    def genDrift(self):
-        pass
-
-    #Implementation of martingale discretization
-    @abstractmethod
-    def martingaleDrift(self):
-        pass
-
+    def choleskyFactor(self):
+         pass 
+    
     #Fixed discrete maturity times
     @property 
     def maturityGrid(self):
@@ -38,11 +40,24 @@ class LIBORModel(ModelInterface):
     def maturityGrid(self, value):
         self._mg = value
 
-    def drift(self):
-        if self.type == 1:
-            return self.martingaleDrift
-        else:
-            return self.genDrift
+    @property 
+    def bondPrices(self):
+        return self._bp
+
+    @bondPrices.setter
+    def bondPrices(self, value):
+        self._bp = value    
+
+     #Implementation of martingale discretization
+    @abstractmethod
+    def genDrift(self):
+        pass
+
+    #Implementation of martingale discretization
+    @abstractmethod
+    def martingaleDrift(self):
+        pass
+    
 
         
         

@@ -24,3 +24,10 @@ class  BrownianMotion(ModelInterface):
     
     def drift(self):
             return 0.1
+
+    def choleskyFactor(self):
+         factor = np.zeros((len(self._tg), len(self._tg)))
+         def factorization():
+              pass
+         np.apply_along_axis
+         return factor  

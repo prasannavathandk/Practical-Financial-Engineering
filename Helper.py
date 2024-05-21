@@ -5,7 +5,7 @@ import numpy as np
 import time  
 
 #a vector of standard normal variables
-def stdNormal(num):
+def stdNormal(_,num):
     return np.random.normal(0, 1, num)
 
 #plot function

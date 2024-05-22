@@ -32,6 +32,7 @@ def discretize(arr, num):
     return arr
 
 def plot():
+    plt.savefig("plot")
     plt.show()
 
 def synchronized(wrapped):

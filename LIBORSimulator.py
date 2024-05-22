@@ -75,6 +75,6 @@ class LIBORSim(EulerScheme):
      #Summary from the sample paths
     def processSP(self):
         #print(self.simMatrix)
-        hp.plotSP(self.simMatrix[5])
+        hp.plotSP(self.simMatrix[0])
         hp.plot()
         

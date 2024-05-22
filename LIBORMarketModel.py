@@ -15,7 +15,8 @@ class LIBORModel(ModelInterface):
         self._bp = prices
         self._tg = hp.discretize(self._mg, scale)
 
-    distribution = hp.stdNormal
+    def distribution(self):
+        return hp.stdNormal
 
     def drift(self):
         if self.type == 1:
@@ -24,9 +25,10 @@ class LIBORModel(ModelInterface):
             return self.genDrift
           
     def SDE(self, curVal, step, rv, index):         #SDE according to eulers scheme
-        mu = self.drift()
+        mu = self.drift()()
         sigma = self.volatility()
-        return curVal + sigma*curVal*step + curVal*np.sqrt(step)*np.dot(sigma, rv) 
+        #print(mu, sigma)
+        return curVal + mu*curVal*step + curVal*np.sqrt(step)*np.dot(sigma, rv) 
     
     def choleskyFactor(self):
          pass 

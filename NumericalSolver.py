@@ -13,7 +13,9 @@ class Solver:
     def SamplePath(count, SDE, timeGrid, N, value):  
         #print("EulerScheme.SamplePath", count) 
         #avoid loop and implement cholesky factorization?
-        for i in range(len(N)-1):
+        #print(value)
+        #print(count)
+        for i in range(len(timeGrid)-1):
             value[i+1] = SDE(curVal=value[i], step=(timeGrid[i+1] - timeGrid[i]),rv = N[i+1], index = i+1)
         return value
 
@@ -61,14 +63,6 @@ class EulerScheme:
     @distribution.setter
     def distribution(self, value):
         self._dist = value
-
-    @property
-    def SDE(self):
-        return self._sde
-    
-    @SDE.setter
-    def SDE(self, value):
-        self._sde = value        
 
     #Number of grid discritization
     @property

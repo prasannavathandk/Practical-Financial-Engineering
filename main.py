@@ -24,5 +24,5 @@ if __name__ == "__main__":
         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
             print("number of cores", multiprocessing.cpu_count())
             NumericalSolver.Solver.setPool(pool)
-            NumericalSolver.Solver.setParallelism(flag=False)
+            NumericalSolver.Solver.setParallelism(flag=True)
             main()

@@ -14,67 +14,80 @@ class LIBORSim(EulerScheme):
             model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         super().__init__(model=model, iter=iter)
         self._sm = np.zeros((self.iter, len(model.maturityGrid)-1, len(model.timeGrid))) #depth=iteration, row=maturity, column=discretizedTime
+        self._ran = model.distribution()(self._sm.shape) 
 
     @property 
-    def simMatrix(self):
+    def matrix(self):
         return self._sm
 
-    @simMatrix.setter
-    def simMatrix(self, value):
+    @matrix.setter
+    def matrix(self, value):
         self._sm = value  
 
     @property 
-    def simSharedMatrix(self):
+    def sharedMatrix(self):
         return self._sh_sm
 
-    @simSharedMatrix.setter
-    def simSharedMatrix(self, value):
-        self._sh_sm = value  
+    @sharedMatrix.setter
+    def sharedMatrix(self, value):
+        self._sh_sm = value 
+
+    @property 
+    def random(self):
+        return self._ran
+
+    @random.setter
+    def random(self, value):
+        self._ran = value  
+
+    @property 
+    def sharedRandom(self):
+        return self._sh_ran
+
+    @sharedRandom.setter
+    def sharedRandom(self, value):
+        self._sh_ran = value           
 
     def join(self):
         for res in self.result:
             res.wait()    
         self.result = [res.get() for res in self.result]  
         #print(self.result)
-        self.simMatrix = np.array(self.result).reshape(self.simMatrix.shape)   
+        self.matrix = np.array(self.sharedMatrix).reshape(self.matrix.shape)   
 
     def initCondition(self,maturityIndex):
         #print(maturityIndex)
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
+    def subEngine(self, iter):
+        for j in range(self.matrix.shape[1]):
+            start = iter*self.matrix.shape[1]*self.matrix.shape[2] + j*self.matrix.shape[2]
+            Solver.SamplePath(iter, j, start, self.model.SDE, self.model.timeGrid, self.sharedRandom, self.sharedMatrix)
+
     def engine(self):
         if Solver.parallel is not True:
-           for i in range(self.simMatrix.shape[0]):
-                for j in range(self.simMatrix.shape[1]):
-                    value = self.simMatrix[i,j]
-                    N = self.model.distribution()(self.simMatrix.shape[2]) 
-                    #print(N)
-                    self.result.append(Solver.SamplePath(count=j, SDE=self.model.SDE, timeGrid=self.model.timeGrid, N=N, value=value))
-                    #print(value)
+           for i in range(self.matrix.shape[0]):
+                for j in range(self.matrix.shape[1]):
+                    Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j])
         else:   
-            for i in range(self.simMatrix.shape[0]):
-                for j in range(self.simMatrix.shape[1]):
-                    #print(i,j)
-                    start = i*self.simMatrix.shape[1]*self.simMatrix.shape[2] + j*self.simMatrix.shape[2]
-                    end = start + self.simMatrix.shape[2]
-                    value = self.simSharedMatrix[start:end]
-                    N = self.model.distribution()(self.simMatrix.shape[2]) 
-                    #print(N)
-                    res = Solver.threadPool.apply_async(func=Solver.SamplePath, args=(j, self.model.SDE, self.model.timeGrid, N, value,))
-                    self.log_results(res)
-            self.join()      
+            self.sharedMatrix = Solver.manager.list(self.matrix.flatten())
+            self.sharedRandom = Solver.manager.list(self.random.flatten())
+            results = [Solver.threadPool.apply_async(func = self.subEngine, args=(i,)) for i in range(self.matrix.shape[0])]
+            # Wait for all results to be completed
+            for result in results:
+                result.wait()     
+            self.matrix = np.array(self.sharedMatrix).reshape(self.matrix.shape)         
         return  
     
     def simulate(self):
-        print(self.simMatrix.shape)
-        self.simMatrix[...,0] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
-        self.simSharedMatrix = Solver.manager.list(self.simMatrix.flatten())
-        #print(self.simMatrix)
+        print(self.matrix.shape)
+        self.matrix[...,0] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
 
      #Summary from the sample paths
     def processSP(self):
-        #print(self.simMatrix)
-        hp.plotSP(self.simMatrix[0])
+        #print(self.matrix)
+        hp.plotSP(self.matrix[0])
         hp.plot()
+        return self.matrix
         

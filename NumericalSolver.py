@@ -10,14 +10,11 @@ class Solver:
     parallel = False
 
     #Generate one sample path
-    def SamplePath(count, SDE, timeGrid, N, value):  
+    def SamplePath(iter, row, start, SDE, timeGrid, random, matrix):  
         #print("EulerScheme.SamplePath", count) 
-        #avoid loop and implement cholesky factorization?
-        #print(value)
-        #print(count)
         for i in range(len(timeGrid)-1):
-            value[i+1] = SDE(curVal=value[i], step=(timeGrid[i+1] - timeGrid[i]),rv = N[i+1], index = i+1)
-        return value
+            matrix[start+i+1] = SDE(curVal=matrix[start+i], step=(timeGrid[i+1] - timeGrid[i]),rv = random[start+i+1], index = i+1)
+        return True
 
     def setPool(tp):
         Solver.threadPool = tp
@@ -90,7 +87,7 @@ class EulerScheme:
            for i in range(self.iter):
                 value = np.zeros(n) 
                 N = np.random.normal(0, 1, n) 
-                self.result.append(Solver.SamplePath(count=i, SDE=sde, timeGrid=timeGrid, N=N, value=value))
+                self.result.append(Solver.SamplePath(count=i, SDE=sde, timeGrid=timeGrid, random=N, matrix=value))
         else:   
             print("number of cores", multiprocessing.cpu_count())
             for i in range(self.iter):

@@ -12,7 +12,7 @@ def main():
     timer.start()
     maturityDates = [1,2,3,4,5,6,7,8,9,10]
     bondPrices = [10,9,8,7,6,5,4,3,2,1]
-    simulator = LIBORSim(maturity=maturityDates, prices=bondPrices, measure=0, iter = 20, scale = 12, type=0)
+    simulator = LIBORSim(maturity=maturityDates, prices=bondPrices, measure=0, iter = 10, scale = 13, type=0)
     simulator.simulate() 
     timer.stop()
     simulator.processSP()  
@@ -22,8 +22,8 @@ def main():
 if __name__ == "__main__":
     with multiprocessing.Manager() as manager:
         NumericalSolver.Solver.manager = manager
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count(), maxtasksperchild=25) as pool:
             print("number of cores", multiprocessing.cpu_count())
             NumericalSolver.Solver.setPool(pool)
-            NumericalSolver.Solver.setParallelism(flag=True)
+            NumericalSolver.Solver.setParallelism(flag=False)
             main()

@@ -56,8 +56,11 @@ class LIBORSim(EulerScheme):
         #print(self.result)
         self.matrix = np.array(self.sharedMatrix).reshape(self.matrix.shape)   
 
+    def popMatrix(self, result):
+        for elem in result:
+            self.matrix[elem[0], elem[1]] = elem[2]  
+
     def initCondition(self,maturityIndex):
-        #print(maturityIndex)
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
     def subEngine(self, i):
@@ -71,10 +74,9 @@ class LIBORSim(EulerScheme):
                 for j in range(self.matrix.shape[1]):
                     Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j])
         else:
-            asyncRes = [Solver.threadPool.apply_async(func = self.subEngine, args=(i,)) for i in range(self.matrix.shape[0])]
+            asyncRes = [Solver.threadPool.apply_async(func = self.subEngine, args=(i,), callback = self.popMatrix) for i in range(self.matrix.shape[0])]
             for ares in asyncRes:
-                for elem in ares.get():
-                    self.matrix[elem[0], elem[1]] = elem[2]      
+                ares.wait()    
         return  
     
     def simulate(self):

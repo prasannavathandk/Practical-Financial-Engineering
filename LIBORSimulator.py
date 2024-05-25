@@ -26,46 +26,22 @@ class LIBORSim(EulerScheme):
         self._sm = value  
 
     @property 
-    def sharedMatrix(self):
-        return self._sh_sm
-
-    @sharedMatrix.setter
-    def sharedMatrix(self, value):
-        self._sh_sm = value 
-
-    @property 
     def random(self):
         return self._ran
 
     @random.setter
     def random(self, value):
         self._ran = value  
-
-    @property 
-    def sharedRandom(self):
-        return self._sh_ran
-
-    @sharedRandom.setter
-    def sharedRandom(self, value):
-        self._sh_ran = value           
-
-    def join(self):
-        for res in self.result:
-            res.wait()    
-        self.result = [res.get() for res in self.result]  
-        #print(self.result)
-        self.matrix = np.array(self.sharedMatrix).reshape(self.matrix.shape)   
-
+         
     def popMatrix(self, result):
-        for elem in result:
-            self.matrix[elem[0], elem[1]] = elem[2]  
+        self.matrix[result[0]] = result[1] 
 
     def initCondition(self,maturityIndex):
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
     def subEngine(self, i):
         print("Processing iteration:", i)
-        return [(i, j, Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j])) for j in range(self.matrix.shape[1])]
+        return (i, [Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j]) for j in range(self.matrix.shape[1])])
     
     def engine(self):
         if Solver.parallel is not True:
@@ -88,8 +64,8 @@ class LIBORSim(EulerScheme):
      #Summary from the sample paths
     def processSP(self):
         #print(self.matrix)
-        hp.plotSP(self.matrix[0])
-        hp.plot()
+        self.matrix = np.mean(self.matrix, axis=0)
+        hp.plotSP(self.matrix)
         print("Post-Processing done!") 
         return self.matrix
         

@@ -40,13 +40,13 @@ class LIBORSim(EulerScheme):
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
     def subEngine(self, i):
-        print("Processing iteration:", i)
+        print("Processing iteration:", i+1)
         return (i, [Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j]) for j in range(self.matrix.shape[1])])
     
     def engine(self):
         if Solver.parallel is not True:
            for i in range(self.matrix.shape[0]):
-                print("Processing iteration:", i)
+                print("Processing iteration:", i+1)
                 for j in range(self.matrix.shape[1]):
                     Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j])
         else:

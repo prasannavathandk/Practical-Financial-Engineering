@@ -12,14 +12,14 @@ def main():
     timer.start()
     
     for ep in range(Parameters.epoch):
-        print("Epoch started...", ep+1) 
-        simulator = LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, measure=0, iter = Parameters.batch, scale = Parameters.scale, type=0)
+        print("---Epoch %i started---" %(ep+1)) 
+        simulator = LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch, scale = Parameters.scale)
         simulator.simulate() 
         timer.stop()
         simulator.processSP()  
         timer.stop() 
         del simulator 
-        print("Epoch complete...", ep+1) 
+        print("---Epoch %i done---"% (ep+1)) 
     print("Simulation complete :) ...", timer.tock)
 
 if __name__ == "__main__":

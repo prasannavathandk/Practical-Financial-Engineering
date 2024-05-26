@@ -24,11 +24,14 @@ class LIBORModel(ModelInterface):
         else:
             return self.genDrift
           
-    def SDE(self, curVal, step, rv, index):         #SDE according to eulers scheme
+    def SDE(self, curVal, i1, i2, rv, row):         #SDE according to eulers scheme
+        #print("SDE", curVal, i1, i2, rv, row)
+        if(self.timeGrid[i2] > self.maturityGrid[row]):
+            return None
         mu = self.drift()()
         sigma = self.volatility()
         #print(mu, sigma)
-        return curVal + mu*curVal*step + curVal*np.sqrt(step)*np.dot(sigma, rv) 
+        return curVal + mu*curVal*(self.timeGrid[i2] - self.timeGrid[i1]) + curVal*np.sqrt((self.timeGrid[i2] - self.timeGrid[i1]))*np.dot(sigma, rv) 
     
     def choleskyFactor(self):
          pass 

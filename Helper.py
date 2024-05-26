@@ -31,8 +31,9 @@ def unitTest(myClass):
     pass
 
 def discretize(arr, num):
+    arr = np.concatenate([[0], arr])
     for i in range(num):
-        arr = np.sort(np.concatenate([arr, np.add(arr,np.concatenate([np.diff(arr)/2,[0]]))]))
+        arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr
 
 def plot():

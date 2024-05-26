@@ -7,7 +7,7 @@ import Helper as hp
 
 class LIBORSim(EulerScheme):
 
-    def __init__(self, maturity, prices, iter = 10, scale = 2, measure=0, type=0):
+    def __init__(self, maturity, prices, measure=0, type=0, iter = 10, scale = 2):
         if(measure == 1):
             model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         else:    
@@ -41,14 +41,14 @@ class LIBORSim(EulerScheme):
 
     def subEngine(self, i):
         print("Processing iteration:", i+1)
-        return (i, [Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j]) for j in range(self.matrix.shape[1])])
+        return (i, [Solver.SamplePath(iter=i, row=j, SDE=self.model.SDE, random=self.random[i,j], matrix=self.matrix[i,j]) for j in range(self.matrix.shape[1])])
     
     def engine(self):
         if Solver.parallel is not True:
            for i in range(self.matrix.shape[0]):
                 print("Processing iteration:", i+1)
                 for j in range(self.matrix.shape[1]):
-                    Solver.SamplePath(iter=i, row=j, start=0, SDE=self.model.SDE, timeGrid=self.model.timeGrid, random=self.random[i,j], matrix=self.matrix[i,j])
+                    Solver.SamplePath(iter=i, row=j, SDE=self.model.SDE, random=self.random[i,j], matrix=self.matrix[i,j])
         else:
             asyncRes = [Solver.threadPool.apply_async(func = self.subEngine, args=(i,), callback = self.popMatrix) for i in range(self.matrix.shape[0])]
             for ares in asyncRes:

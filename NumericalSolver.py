@@ -10,10 +10,10 @@ class Solver:
     parallel = False
 
     #Generate one sample path
-    def SamplePath(iter, row, start, SDE, timeGrid, random, matrix):  
+    def SamplePath(iter, row, SDE, random, matrix):  
         #print("EulerScheme.SamplePath", count)
-        for i in range(len(timeGrid)-1):
-            matrix[start+i+1] = SDE(curVal=matrix[start+i], step=(timeGrid[i+1] - timeGrid[i]),rv = random[start+i+1], index = i+1)
+        for i in range(matrix.shape[0]-1):
+            matrix[i+1] = SDE(curVal=matrix[i], i1 = i, i2 = i+1, rv = random[i+1], row=row)
         #print(matrix)
         return matrix
 

@@ -3,6 +3,26 @@ from IModel import ModelInterface
 import multiprocessing
 import numpy as np
 
+threadPool = None
+
+class Solver:
+    threadPool = None
+    parallel = False
+
+    #Generate one sample path
+    def SamplePath(iter, row, SDE, random, matrix):  
+        #print("EulerScheme.SamplePath", count)
+        for i in range(matrix.shape[0]-1):
+            matrix[i+1] = SDE(curVal=matrix[i], i1 = i, i2 = i+1, rv = random[i+1], row=row)
+        #print(matrix)
+        return matrix
+
+    def setPool(tp):
+        Solver.threadPool = tp
+
+    def setParallelism(flag):
+        Solver.parallel = flag    
+
 class EulerScheme:
 
     def __init__(self, model, iter) -> None:
@@ -42,14 +62,6 @@ class EulerScheme:
     def distribution(self, value):
         self._dist = value
 
-    @property
-    def SDE(self):
-        return self._sde
-    
-    @SDE.setter
-    def SDE(self, value):
-        self._sde = value        
-
     #Number of grid discritization
     @property
     def grid(self):
@@ -63,26 +75,29 @@ class EulerScheme:
     def log_results(self, res):
         self.result.append(res)
 
-    #Generate the number of sample paths
-    def SamplePath(self):
+    def join(self):
+        for res in self.result:
+            res.wait()
+        self.result = [res.get() for res in self.result]    
+
+    def engine(self):
         timeGrid = self.model.timeGrid
         n = len(timeGrid)
-        value = np.zeros(n)
-        N = self.distribution(n)
-        #avoid loop and implement cholesky factorization?        
-        for i in range(n-1):
-            value[i+1] = self.SDE(curVal=value[i], step=(timeGrid[i+1] - timeGrid[i]),rv = N[i+1], index = i+1)
-        self.log_results(value)
-               
-    def engine(self):
-        """
-            with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as tp:
+        sde = self.SDE
+        if Solver.parallel is not True:
+           for i in range(self.iter):
+                value = np.zeros(n) 
+                N = np.random.normal(0, 1, n) 
+                self.result.append(Solver.SamplePath(count=i, SDE=sde, timeGrid=timeGrid, random=N, matrix=value))
+        else:   
+            print("number of cores", multiprocessing.cpu_count())
             for i in range(self.iter):
-                tp.apply_async(func=self.SamplePath, callback=self.log_results) 
-        """
-        #Parallelize loop to speed up
-        for i in range(self.iter):
-            self.SamplePath()
+                value = np.zeros(n) 
+                N = np.random.normal(0, 1, n) 
+                res = Solver.threadPool.apply_async(func=Solver.SamplePath, args=(i, sde, timeGrid, N, value,))
+                self.log_results(res)
+            self.join()        
+        return        
            
     def execute(self):
         self.engine()

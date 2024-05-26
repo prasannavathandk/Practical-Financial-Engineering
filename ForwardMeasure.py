@@ -2,8 +2,8 @@ from LIBORMarketModel import LIBORModel
 
 class ForwardMeasure(LIBORModel):
 
-    def __init__(self, maturity, scale = 2, type = 0):
-        super().__init__(maturity=maturity, scale = scale, type = type)
+    def __init__(self, maturity, prices, scale = 2, type = 0):
+        super().__init__(maturity=maturity, prices=prices, scale = scale, type = type)
 
     #calculate drift under forward measure for a certain index, type = 0
     def genDrift(self):

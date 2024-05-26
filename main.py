@@ -1,22 +1,26 @@
 import multiprocessing
-
+from Parameters import Parameters 
 import numpy as np
 import Helper as hp
 from LIBORSimulator import LIBORSim
-import NumericalSolver  
+import NumericalSolver
 
 def main():
-    print("LIBOR Market Model- Simulation")
+    print("LIBOR Market Model")
     timer = hp.timer()
+    print("Simulation initiate...", timer.tick)    
     timer.start()
-    maturityDates = [1,2,3,4,5,6,7,8,9,10]
-    bondPrices = [10,9,8,7,6,5,4,3,2,1]
-    simulator = LIBORSim(maturity=maturityDates, prices=bondPrices, measure=0, iter = 50, scale = 12, type=0)
-    simulator.simulate()
-    timer.stop()
-    simulator.processSP()  
-    timer.stop()  
-    print("Simulation complete")
+    
+    for ep in range(Parameters.epoch):
+        print("Epoch started...", ep+1) 
+        simulator = LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, measure=0, iter = Parameters.batch, scale = Parameters.scale, type=0)
+        simulator.simulate() 
+        timer.stop()
+        simulator.processSP()  
+        timer.stop() 
+        del simulator 
+        print("Epoch complete...", ep+1) 
+    print("Simulation complete :) ...", timer.tock)
 
 if __name__ == "__main__":
     with multiprocessing.Manager() as manager:
@@ -24,5 +28,5 @@ if __name__ == "__main__":
         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
             print("number of cores", multiprocessing.cpu_count())
             NumericalSolver.Solver.setPool(pool)
-            NumericalSolver.Solver.setParallelism(flag=True)
+            NumericalSolver.Solver.setParallelism(flag=Parameters.parallel)
             main()

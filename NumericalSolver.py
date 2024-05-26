@@ -11,10 +11,11 @@ class Solver:
 
     #Generate one sample path
     def SamplePath(iter, row, start, SDE, timeGrid, random, matrix):  
-        #print("EulerScheme.SamplePath", count) 
+        #print("EulerScheme.SamplePath", count)
         for i in range(len(timeGrid)-1):
             matrix[start+i+1] = SDE(curVal=matrix[start+i], step=(timeGrid[i+1] - timeGrid[i]),rv = random[start+i+1], index = i+1)
-        return True
+        #print(matrix)
+        return matrix
 
     def setPool(tp):
         Solver.threadPool = tp

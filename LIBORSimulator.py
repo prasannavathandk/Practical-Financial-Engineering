@@ -1,19 +1,20 @@
 import numpy as np
+import pandas as pd
 from BM import BrownianMotion
 import SpotMeasure as SM
 import ForwardMeasure as FM
-from NumericalSolver import EulerScheme, Solver
+from NumericalSolver import SolutionScheme, Solver
 import Helper as hp
 
-class LIBORSim(EulerScheme):
+class LIBORSim(SolutionScheme):
 
-    def __init__(self, maturity, prices, measure=0, type=0, iter = 10, scale = 2):
+    def __init__(self, maturity, prices, measure=0, type=0, iter = 10):
         if(measure == 1):
-            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
+            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices)
         else:    
-            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
+            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices)
         super().__init__(model=model, iter=iter)
-        self._sm = np.zeros((self.iter, len(model.maturityGrid)-1, len(model.timeGrid))) #depth=iteration, row=maturity, column=discretizedTime
+        self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, row=maturity, column=discretizedTime
         self._ran = model.distribution()(self._sm.shape)
         print("Pre-Processing done!") 
 
@@ -39,25 +40,25 @@ class LIBORSim(EulerScheme):
     def initCondition(self,maturityIndex):
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
-    def subEngine(self, i):
-        print("Processing iteration:", i+1)
-        return (i, [Solver.SamplePath(iter=i, row=j, SDE=self.model.SDE, random=self.random[i,j], matrix=self.matrix[i,j]) for j in range(self.matrix.shape[1])])
+    def subEngine(self, iter):
+        print("Processing iteration:", iter+1)
+        return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], eta = self.model.eta, random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
     
     def engine(self):
         if Solver.parallel is not True:
            for i in range(self.matrix.shape[0]):
                 print("Processing iteration:", i+1)
                 for j in range(self.matrix.shape[1]):
-                    Solver.SamplePath(iter=i, row=j, SDE=self.model.SDE, random=self.random[i,j], matrix=self.matrix[i,j])
+                    Solver.SamplePath(iter=i, ti=j, SDE=self.model.SDE, random=self.random[i,j], matrix=self.matrix[i,j])
         else:
-            asyncRes = [Solver.threadPool.apply_async(func = self.subEngine, args=(i,), callback = self.popMatrix) for i in range(self.matrix.shape[0])]
+            asyncRes = [Solver.threadPool.apply_async(func = self.subEngine, args=(iter,), callback = self.popMatrix) for iter in range(self.matrix.shape[0])]
             for ares in asyncRes:
                 ares.wait()    
         return  
     
     def simulate(self):
         print(self.matrix.shape)
-        self.matrix[...,0] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
+        self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
         print("Processing done!") 
 
@@ -65,7 +66,9 @@ class LIBORSim(EulerScheme):
     def processSP(self):
         #print(self.matrix)
         self.matrix = np.mean(self.matrix, axis=0)
-        hp.plotSP(self.matrix)
+        print(np.mean(self.matrix, axis=0))
+        df = pd.DataFrame(self.matrix, columns=self.model.maturityGrid[:-1], index=self.model.timeGrid)
+        hp.plotSP(df)
         print("Post-Processing done!") 
         return self.matrix
         

@@ -10,10 +10,13 @@ def main():
     timer = hp.timer()
     print("Simulation initiate...", timer.tick)    
     timer.start()
+
+    maturityDates = np.array(Parameters.maturityDates)
+    bondPrices = np.array([hp.bondPricing(i) for i in range(1,11)]) #np.array(Parameters.bondPrices)
     
     for ep in range(Parameters.epoch):
         print("---Epoch %i started---" %(ep+1)) 
-        simulator = LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch, scale = Parameters.scale)
+        simulator = LIBORSim(maturity=maturityDates, prices=bondPrices, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch)
         simulator.simulate() 
         timer.stop()
         simulator.processSP()  

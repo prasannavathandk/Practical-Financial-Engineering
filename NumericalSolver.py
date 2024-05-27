@@ -3,17 +3,17 @@ from IModel import ModelInterface
 import multiprocessing
 import numpy as np
 
-threadPool = None
-
 class Solver:
     threadPool = None
     parallel = False
 
     #Generate one sample path
-    def SamplePath(iter, row, SDE, random, matrix):  
-        #print("EulerScheme.SamplePath", count)
-        for i in range(matrix.shape[0]-1):
-            matrix[i+1] = SDE(curVal=matrix[i], i1 = i, i2 = i+1, rv = random[i+1], row=row)
+    def SamplePath(iter, ti, forwardCurve, eta, SDE, random, matrix):  
+        #print("EulerScheme.SamplePath", iter)
+        if(ti == 0):
+            return matrix
+        for n in range(matrix.shape[0]):
+            matrix[n] = SDE(forwardCurve = forwardCurve, ti = ti, n = n, rv = random[n])
         #print(matrix)
         return matrix
 
@@ -23,7 +23,7 @@ class Solver:
     def setParallelism(flag):
         Solver.parallel = flag    
 
-class EulerScheme:
+class SolutionScheme:
 
     def __init__(self, model, iter) -> None:
         if(isinstance(model, ModelInterface)):
@@ -90,7 +90,6 @@ class EulerScheme:
                 N = np.random.normal(0, 1, n) 
                 self.result.append(Solver.SamplePath(count=i, SDE=sde, timeGrid=timeGrid, random=N, matrix=value))
         else:   
-            print("number of cores", multiprocessing.cpu_count())
             for i in range(self.iter):
                 value = np.zeros(n) 
                 N = np.random.normal(0, 1, n) 

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from IModel import ModelInterface
-from NumericalSolver import EulerScheme
+from NumericalSolver import SolutionScheme
 import multiprocessing
 import subprocess
 import sys
@@ -9,29 +9,30 @@ import numpy as np
 
 class LIBORModel(ModelInterface):
 
-    def __init__(self, maturity, prices, scale, type = 0) -> None:
+    def __init__(self, maturity, prices, type = 0) -> None:
         self.type = type
         self._mg = maturity
         self._bp = prices
-        self._tg = hp.discretize(self._mg, scale)
+        self._tg = hp.discretize(self._mg)
+        self._dr = self.martingaleDrift if self.type == 1 else self.genDrift
+        self._eta = [np.where(self.maturityGrid > t)[0] for t in self.timeGrid]
+        self._n = [np.where(self.maturityGrid <= n)[0] for n in self.maturityGrid]
 
     def distribution(self):
         return hp.stdNormal
 
     def drift(self):
-        if self.type == 1:
-            return self.martingaleDrift
-        else:
-            return self.genDrift
+        return self._dr
           
-    def SDE(self, curVal, i1, i2, rv, row):         #SDE according to eulers scheme
-        #print("SDE", curVal, i1, i2, rv, row)
-        if(self.timeGrid[i2] > self.maturityGrid[row]):
+    def _SDE(self, curVal, step, stdN, mu, sigma):         #SDE according to eulers scheme
+        #print("LIBORModel._SDE", curVal, step, stdN, mu, sigma)
+        return curVal + mu*curVal*step + curVal*np.sqrt(step)*np.dot(sigma, stdN) 
+    
+    def SDE(self, forwardCurve, ti, n, rv):
+        #print("LIBORModel.SDE", forwardCurve, ti, n, rv)
+        if(self.timeGrid[ti] > self.maturityGrid[n]):
             return None
-        mu = self.drift()()
-        sigma = self.volatility()
-        #print(mu, sigma)
-        return curVal + mu*curVal*(self.timeGrid[i2] - self.timeGrid[i1]) + curVal*np.sqrt((self.timeGrid[i2] - self.timeGrid[i1]))*np.dot(sigma, rv) 
+        return self._SDE(forwardCurve[n], self.timeGrid[ti]-self.timeGrid[ti-1], rv, self.drift()(self.eta(ti-1, n), forwardCurve), self.volatility(ti))
     
     def choleskyFactor(self):
          pass 
@@ -51,14 +52,21 @@ class LIBORModel(ModelInterface):
 
     @bondPrices.setter
     def bondPrices(self, value):
-        self._bp = value    
+        self._bp = value   
 
-     #Implementation of martingale discretization
+    def eta(self, t, n):
+        return np.intersect1d(self._eta[t], self._n[n])
+    
+    def volatility(self, t, maturity = False):
+        #print("SpotMeasure.volatility", t)
+        return self.timeGrid[t]*(Parameters.volatility/100) if maturity is False else self.maturityGrid[t]*(Parameters.volatility/100)
+
+     #Implementation of general drift
     @abstractmethod
     def genDrift(self):
         pass
 
-    #Implementation of martingale discretization
+    #Implementation of martingale drift
     @abstractmethod
     def martingaleDrift(self):
         pass

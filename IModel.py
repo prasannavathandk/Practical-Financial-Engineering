@@ -8,17 +8,17 @@ class ModelInterface(ABC):
 
     #can be determinstic
     @abstractmethod
-    def volatility(self, type):
+    def volatility(self):
         pass
 
     #can be determinstic
     @abstractmethod
-    def distribution(self, type):
+    def distribution(self):
         pass
 
     #can be determinstic
     @abstractmethod
-    def SDE(self, curVal, mu, sigma, step, rv):
+    def SDE(self):
         pass
 
     #if applicable

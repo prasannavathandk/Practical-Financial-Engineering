@@ -63,12 +63,12 @@ class LIBORSim(SolutionScheme):
         print("Processing done!") 
 
      #Summary from the sample paths
-    def processSP(self):
-        #print(self.matrix)
+    def analyze(self):
         self.matrix = np.mean(self.matrix, axis=0)
-        print(np.mean(self.matrix, axis=0))
+        avgFR = np.mean(np.nan_to_num(self.matrix), axis=1)[0:len(self.matrix):252]
         df = pd.DataFrame(self.matrix, columns=self.model.maturityGrid[:-1], index=self.model.timeGrid)
-        hp.plotSP(df)
+        hp.plotDF(df)
+        hp.plotNP(avgFR)
         print("Post-Processing done!") 
-        return self.matrix
+        return df
         

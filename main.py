@@ -7,19 +7,23 @@ import NumericalSolver
 
 def main():
     print("LIBOR Market Model")
+    print("**********************************")
     timer = hp.timer()
-    print("Simulation initiate...", timer.tick)    
-    timer.start()
-
     maturityDates = np.array(Parameters.maturityDates)
-    bondPrices = np.array([(lambda n: 100/(1+0.1)**n)(i) for i in range(1,11)]) #np.array(Parameters.bondPrices)
+    bondPrices = np.array([(lambda n: 100/(1+Parameters.spotRate/100)**n)(i) for i in range(1,len(maturityDates)+1)]) #np.array(Parameters.bondPrices)
+    print("Simulation to run with the following parameters:")
+    print("Maturity Dates:", maturityDates)
+    print("Bond Prices:", bondPrices)
+    print("----------------------------------")
+    print("Simulation initiate...", timer.tick) 
+    timer.start()   
     
     for ep in range(Parameters.epoch):
         print("---Epoch %i started---" %(ep+1)) 
         simulator = LIBORSim(maturity=maturityDates, prices=bondPrices, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch)
         simulator.simulate() 
         timer.stop()
-        simulator.processSP()  
+        simulator.analyze()  
         timer.stop() 
         del simulator 
         print("---Epoch %i done---"% (ep+1)) 

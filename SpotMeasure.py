@@ -1,5 +1,3 @@
-from Parameters import Parameters
-
 import numpy as np
 from LIBORMarketModel import LIBORModel
 import Helper as hp

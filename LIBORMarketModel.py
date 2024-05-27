@@ -7,6 +7,8 @@ import sys
 import Helper as hp
 import numpy as np
 
+from Parameters import Parameters
+
 class LIBORModel(ModelInterface):
 
     def __init__(self, maturity, prices, type = 0) -> None:

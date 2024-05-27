@@ -12,7 +12,7 @@ def main():
     timer.start()
 
     maturityDates = np.array(Parameters.maturityDates)
-    bondPrices = np.array([hp.bondPricing(i) for i in range(1,11)]) #np.array(Parameters.bondPrices)
+    bondPrices = np.array([(lambda n: 100/(1+0.1)**n)(i) for i in range(1,11)]) #np.array(Parameters.bondPrices)
     
     for ep in range(Parameters.epoch):
         print("---Epoch %i started---" %(ep+1)) 

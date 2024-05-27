@@ -48,6 +48,4 @@ def synchronized(wrapped):
     def _wrap(*args, **kwargs):
         with lock:
             return wrapped(*args, **kwargs)
-    return _wrap
-
-bondPricing = lambda n: 100/(1+0.1)**n    
+    return _wrap  

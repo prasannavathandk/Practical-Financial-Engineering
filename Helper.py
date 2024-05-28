@@ -2,7 +2,9 @@ import functools
 import threading
 import matplotlib.pyplot as plt
 import numpy as np
-import time, datetime 
+import pandas as pd
+import time, datetime
+from Parameters import Parameters 
 
 #a vector of standard normal variables
 def stdNormal(shape):
@@ -10,12 +12,27 @@ def stdNormal(shape):
     return np.random.default_rng().standard_normal(size=shape)
 
 #plot function
-def plotSP(data):
+def plotDF(df, clear=True):
     #Remove loop and implement direct plot
-    for dat in data:
-        plt.plot(dat)
-    plt.savefig("plt.png") 
-    plt.clf()   
+    df.plot(legend=True)
+    plt.title("(Sexy-) LIBOR Curves")
+    plt.xlabel("Time Axis")
+    plt.ylabel("Forward Rate")
+    plt.legend(loc="lower right")
+    plt.savefig("ForwardCurve.png") 
+    if clear: plt.close()
+
+def plotNP(data, clear=True):
+    #Remove loop and implement direct plot
+    plt.bar(range(1, len(data) + 1), data)
+    plt.title("Forward Rates")
+    plt.xlabel("Time Axis")
+    plt.ylabel("Forward Rate")
+    plt.savefig("Forwardrate.png") 
+    if clear: plt.close() 
+
+def showPLot():
+    plt.show()       
 
 class timer:     
     tick = datetime.datetime.now()
@@ -30,15 +47,12 @@ class timer:
 def unitTest(myClass):
     pass
 
-def discretize(arr, num):
-    arr = np.concatenate([[0], arr])
-    for i in range(num):
+def discretize(arr):
+    arr = np.concatenate([[0], np.sort(arr)])
+    arr = [i*(1/252) for i in range(arr[-1]*Parameters.tradingDays + 1)]
+    for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr
-
-def plot():
-    plt.savefig("plot")
-    plt.show()
 
 def synchronized(wrapped):
     lock = threading.Lock()
@@ -46,4 +60,4 @@ def synchronized(wrapped):
     def _wrap(*args, **kwargs):
         with lock:
             return wrapped(*args, **kwargs)
-    return _wrap
+    return _wrap  

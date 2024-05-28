@@ -65,8 +65,9 @@ class LIBORSim(SolutionScheme):
      #Summary from the sample paths
     def analyze(self):
         self.matrix = np.mean(self.matrix, axis=0)
-        avgFR = np.mean(np.nan_to_num(self.matrix), axis=1)[0:len(self.matrix):252]
+        avgFR = np.nanmean(self.matrix, axis=1)[0:len(self.matrix):252]
         df = pd.DataFrame(self.matrix, columns=self.model.maturityGrid[:-1], index=self.model.timeGrid)
+        df.index.name = "Time"
         hp.plotDF(df)
         hp.plotNP(avgFR)
         print("Post-Processing done!") 

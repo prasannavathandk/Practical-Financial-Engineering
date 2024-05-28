@@ -12,7 +12,7 @@ def stdNormal(shape):
     return np.random.default_rng().standard_normal(size=shape)
 
 #plot function
-def plotDF(df):
+def plotDF(df, clear=True):
     #Remove loop and implement direct plot
     df.plot(legend=True)
     plt.title("(Sexy-) LIBOR Curves")
@@ -20,16 +20,19 @@ def plotDF(df):
     plt.ylabel("Forward Rate")
     plt.legend(loc="lower right")
     plt.savefig("ForwardCurve.png") 
-    plt.clf() 
+    if clear: plt.close()
 
-def plotNP(data):
+def plotNP(data, clear=True):
     #Remove loop and implement direct plot
     plt.bar(range(1, len(data) + 1), data)
     plt.title("Forward Rates")
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")
     plt.savefig("Forwardrate.png") 
-    plt.clf()       
+    if clear: plt.close() 
+
+def showPLot():
+    plt.show()       
 
 class timer:     
     tick = datetime.datetime.now()

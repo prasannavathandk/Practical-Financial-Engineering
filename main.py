@@ -43,7 +43,7 @@ def main():
         output.info()
         output.describe(include='all')
         output.to_csv("simulation.csv")
-        hp.plotDF(output.loc[(Parameters.epoch)], False)
+        hp.plotDF(output.loc[(Parameters.epoch)], clear=False)
         hp.showPLot()
          
     print("Simulation complete :) ...", timer.tock)

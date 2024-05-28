@@ -66,7 +66,7 @@ class LIBORSim(SolutionScheme):
     def analyze(self):
         self.matrix = np.mean(self.matrix, axis=0)
         avgFR = np.nanmean(self.matrix, axis=1)[0:len(self.matrix):252]
-        df = pd.DataFrame(self.matrix, columns=self.model.maturityGrid[:-1], index=self.model.timeGrid)
+        df = pd.DataFrame(self.matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=self.model.timeGrid)
         df.index.name = "Time"
         hp.plotDF(df)
         hp.plotNP(avgFR)

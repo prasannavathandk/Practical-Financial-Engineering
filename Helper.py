@@ -10,7 +10,7 @@ from Parameters import Parameters
 def stdNormal(shape):
     return np.random.default_rng().standard_normal(size=shape)
 
-def plotDF(df, title = "", clear=True):
+def plotDF(df, title, clear=True):
     plt.figuresize=(12, 6)
     df.plot(legend=True)
     plt.title("(Sexy-) LIBOR Curves, " + title)
@@ -18,15 +18,15 @@ def plotDF(df, title = "", clear=True):
     plt.ylabel("Forward Rate")
     plt.legend(loc="lower right")
     plt.figtext(0.5, 0.01, "Maturity Dates = " + str(Parameters.maturityDates) + ", Bond Prices = " + str(Parameters.bondPrices), va="bottom", ha="center")
-    plt.savefig("ForwardCurve.png") 
+    plt.savefig(title + ".png") 
     if clear: plt.close()
 
-def plotNP(data, title = "", clear=True):
+def plotNP(data, title, clear=True):
     plt.bar(range(1, len(data) + 1), data)
     plt.title("Maturity Averaged Forward Rates" + title)
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")
-    plt.savefig("Forwardrate.png") 
+    plt.savefig(title + ".png") 
     if clear: plt.close()     
 
 def showPLot():
@@ -51,11 +51,3 @@ def discretize(arr):
     for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr
-
-def synchronized(wrapped):
-    lock = threading.Lock()
-    @functools.wraps(wrapped)
-    def _wrap(*args, **kwargs):
-        with lock:
-            return wrapped(*args, **kwargs)
-    return _wrap  

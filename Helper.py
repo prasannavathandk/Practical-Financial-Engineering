@@ -11,8 +11,7 @@ def stdNormal(shape):
     return np.random.default_rng().standard_normal(size=shape)
 
 def plotDF(df, title, clear=True):
-    plt.figuresize=(12, 6)
-    df.plot(legend=True)
+    df.plot(figsize = (24,12), legend=True)
     plt.title("(Sexy-) LIBOR Curves, " + title)
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")

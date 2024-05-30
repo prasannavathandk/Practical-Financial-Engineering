@@ -8,10 +8,11 @@ import Helper as hp
 from LIBORSimulator import LIBORSim
 import NumericalSolver
 
+nofCores = multiprocessing.cpu_count()
 
 def trigger(epoch):
     print("---Epoch %i started---" %(epoch+1)) 
-    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch)
+    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
     simulator.simulate() 
     df = simulator.analyze()
     df["epoch"] = epoch+1 
@@ -42,8 +43,8 @@ def main():
         output = pd.concat(df).swaplevel().sort_index()        
         output.info()
         output.describe(include='all')
-        output.to_csv("Simulation-ForwardMeasure-General.csv")
-        hp.plotDF(output.loc[(Parameters.epoch)], title="Curve-ForwardMeasure-General", clear=False)
+        output.to_csv("Simulation-SpotMeasure-General.csv")
+        hp.plotDF(output.loc[(Parameters.epoch)], title="Curve-SpotMeasure-General", clear=False)
         hp.showPLot()
          
     print("Simulation complete :) ...", timer.tock)
@@ -51,8 +52,8 @@ def main():
 if __name__ == "__main__":
     with multiprocessing.Manager() as manager:
         NumericalSolver.Solver.manager = manager
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            print("number of cores", multiprocessing.cpu_count())
+        with multiprocessing.Pool(processes=nofCores) as pool:
+            print("number of cores", nofCores)
             NumericalSolver.Solver.setPool(pool)
             NumericalSolver.Solver.setParallelism(flag=Parameters.parallel)
             main()

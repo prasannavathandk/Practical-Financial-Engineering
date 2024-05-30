@@ -8,7 +8,7 @@ class Solver:
     parallel = False
 
     #Generate one sample path
-    def SamplePath(iter, ti, forwardCurve, eta, SDE, random, matrix):  
+    def SamplePath(iter, ti, forwardCurve, SDE, random, matrix):  
         #print("EulerScheme.SamplePath", iter)
         if(ti == 0):
             return matrix

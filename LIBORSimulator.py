@@ -42,7 +42,7 @@ class LIBORSim(SolutionScheme):
 
     def subEngine(self, iter):
         print("Processing iteration:", iter+1)
-        return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], eta = self.model.eta, random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
+        return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
     
     def engine(self):
         if Solver.parallel is not True:
@@ -65,11 +65,8 @@ class LIBORSim(SolutionScheme):
      #Summary from the sample paths
     def analyze(self):
         self.matrix = np.mean(self.matrix, axis=0)
-        avgFR = np.nanmean(self.matrix, axis=1)[0:len(self.matrix):252]
         df = pd.DataFrame(self.matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=self.model.timeGrid)
         df.index.name = "Time"
-        hp.plotDF(df)
-        hp.plotNP(avgFR)
         print("Post-Processing done!") 
         return df
         

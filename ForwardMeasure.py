@@ -1,4 +1,6 @@
+import numpy as np
 from LIBORMarketModel import LIBORModel
+from SpotMeasure import SpotMeasure
 
 class ForwardMeasure(LIBORModel):
 
@@ -6,9 +8,13 @@ class ForwardMeasure(LIBORModel):
         super().__init__(maturity=maturity, prices=prices, type = type)
 
     #calculate drift under forward measure for a certain index, type = 0
-    def genDrift(self):
-        return 0.25
+    def genDrift(self, nu, forwardCurve):
+        #print("ForwardMeasure.genDrift", nu, forwardCurve)
+        return -1*np.sum([((self.maturityGrid[_nu]-self.maturityGrid[_nu - 1])*(forwardCurve[_nu])*(np.dot(self.volatility(_nu, True), self.volatility(_nu, True))))/(1+((self.maturityGrid[_nu]-self.maturityGrid[_nu-1])*(forwardCurve[_nu]))) for _nu in nu])
 
     #calculate drift under martingale discretization, type = 1
     def martingaleDrift(self):
         return 0.50
+    
+    def nu(self, t, n):
+        return self._f[n]

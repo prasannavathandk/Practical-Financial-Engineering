@@ -42,8 +42,8 @@ def main():
         output = pd.concat(df).swaplevel().sort_index()        
         output.info()
         output.describe(include='all')
-        output.to_csv("simulation.csv")
-        hp.plotDF(output.loc[(Parameters.epoch)], clear=False)
+        output.to_csv("Simulation-ForwardMeasure-General.csv")
+        hp.plotDF(output.loc[(Parameters.epoch)], title="Curve-ForwardMeasure-General", clear=False)
         hp.showPLot()
          
     print("Simulation complete :) ...", timer.tock)

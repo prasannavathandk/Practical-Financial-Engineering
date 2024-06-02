@@ -6,9 +6,7 @@ class PricingEngine:
 
     '''
     '''
-    def __init__(self, initial_curve, intervals, simulation) -> None:
-        self.initial_curve = initial_curve
-        self.intervals = intervals
+    def __init__(self, simulation) -> None:
         self.simulation = simulation
 
     def PricingMethods(self):

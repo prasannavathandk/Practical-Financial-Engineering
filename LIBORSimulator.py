@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import multiprocessing
+from Parameters import Parameters
 from BM import BrownianMotion
 import SpotMeasure as SM
 import ForwardMeasure as FM
@@ -16,6 +18,7 @@ class LIBORSim(SolutionScheme):
         super().__init__(model=model, iter=iter)
         self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, row=maturity, column=discretizedTime
         self._ran = model.distribution()(self._sm.shape)
+        self.epoch = 0 
         print("Pre-Processing done!") 
 
     @property 
@@ -41,7 +44,7 @@ class LIBORSim(SolutionScheme):
         return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
 
     def subEngine(self, iter):
-        print("Processing iteration:", iter+1)
+        print("Processing iteration:", self.epoch*Parameters.batch(multiprocessing.cpu_count()) + iter + 1)
         return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
     
     def engine(self):
@@ -56,14 +59,16 @@ class LIBORSim(SolutionScheme):
                 ares.wait()    
         return  
     
-    def simulate(self):
+    def simulate(self, epoch = 0):
         print(self.matrix.shape)
+        self.epoch = epoch
         self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
         print("Processing done!") 
 
      #Summary from the sample paths
-    def analyze(self):
+    def analyze(self, epoch = 0):
+        self.epoch = epoch
         self.matrix = np.mean(self.matrix, axis=0)
         df = pd.DataFrame(self.matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=self.model.timeGrid)
         df.index.name = "Time"

@@ -11,8 +11,7 @@ def stdNormal(shape):
     return np.random.default_rng().standard_normal(size=shape)
 
 def plotDF(df, title, clear=True):
-    plt.figuresize=(12, 6)
-    df.plot(legend=True)
+    df.plot(figsize = (24,12), legend=True)
     plt.title("(Sexy-) LIBOR Curves, " + title)
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")
@@ -51,3 +50,11 @@ def discretize(arr):
     for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr
+
+# Mapping function to convert maturity to years
+def maturity_to_years(maturity):
+    if 'month' in maturity:
+        return int(maturity.split()[0]) / 12
+    elif 'year' in maturity:
+        return int(maturity.split()[0])
+    return None

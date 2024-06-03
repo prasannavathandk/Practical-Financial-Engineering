@@ -50,3 +50,11 @@ def discretize(arr):
     for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr
+
+# Mapping function to convert maturity to years
+def maturity_to_years(maturity):
+    if 'month' in maturity:
+        return int(maturity.split()[0]) / 12
+    elif 'year' in maturity:
+        return int(maturity.split()[0])
+    return None

@@ -46,7 +46,7 @@ def unitTest(myClass):
 
 def discretize(arr):
     arr = np.concatenate([[0], np.sort(arr)])
-    arr = [i*(1/252) for i in range(arr[-1]*Parameters.tradingDays + 1)]
+    arr = [i*(1/Parameters.tradingDays) for i in range(arr[-1]*Parameters.tradingDays + 1)]
     for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr

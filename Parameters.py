@@ -25,7 +25,7 @@ class Parameters:
 
     #Simulation Parameters
     epoch = 10        #Number of epochs or batches to run
-    batch = lambda core: 2**core        #Number of iterations per epoch = Number of sample paths
+    batch = lambda core: 5*core        #Number of iterations per epoch = Number of sample paths
     scale = 1           #Number of binary divisions per trading day
     parallel = True     #Flag to run the simulation in parallel
     

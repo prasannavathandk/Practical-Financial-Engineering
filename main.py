@@ -40,11 +40,11 @@ def main():
         df = [trigger(ep) for ep in range(Parameters.epoch)]
         print("----------------------------------")
         print("Result Summary:")
-        output = pd.concat(df).swaplevel().sort_index()        
+        output = pd.concat(df).swaplevel().sort_index()
         output.info()
         output.describe(include='all')
         output.to_csv("Simulation-SpotMeasure-General.csv")
-        hp.plotDF(output.loc[(Parameters.epoch)], title="Curve-SpotMeasure-General", clear=False)
+        hp.plotDF(output.loc[(1)], title="Curve-SpotMeasure-General", clear=False)
         hp.showPLot()
          
     print("Simulation complete :) ...", timer.tock)

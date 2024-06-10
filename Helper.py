@@ -12,7 +12,7 @@ def stdNormal(shape):
 
 def plotDF(df, title, clear=True):
     df.plot(figsize = (24,12), legend=True)
-    plt.title("(Sexy-) LIBOR Curves, " + title)
+    plt.title("LIBOR Forward Rate Curve, " + title)
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")
     plt.legend(loc="lower right")

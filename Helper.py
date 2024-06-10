@@ -12,7 +12,7 @@ def stdNormal(shape):
 
 def plotDF(df, title, clear=True):
     df.plot(figsize = (24,12), legend=True)
-    plt.title("(Sexy-) LIBOR Curves, " + title)
+    plt.title("LIBOR Forward Rate Curve, " + title)
     plt.xlabel("Time Axis")
     plt.ylabel("Forward Rate")
     plt.legend(loc="lower right")
@@ -46,7 +46,7 @@ def unitTest(myClass):
 
 def discretize(arr):
     arr = np.concatenate([[0], np.sort(arr)])
-    arr = [i*(1/252) for i in range(arr[-1]*Parameters.tradingDays + 1)]
+    arr = [i*(1/Parameters.tradingDays) for i in range(arr[-1]*Parameters.tradingDays + 1)]
     for _ in range(Parameters.scale-1):
         arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
     return arr

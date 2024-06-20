@@ -10,7 +10,7 @@ class SpotMeasure(LIBORModel):
     #calculate drift under spot measure for a certain index, type = 0
     def genDrift(self, nu, forwardCurve):
         #print("SpotMeasure.genDrift", nu, forwardCurve)
-        return np.sum([((self.maturityGrid[_nu+1]-self.maturityGrid[_nu])*(forwardCurve[_nu])*(np.dot(self.volatility(_nu, True), self.volatility(_nu, True))))/(1+((self.maturityGrid[_nu+1]-self.maturityGrid[_nu])*(forwardCurve[_nu]))) for _nu in nu])
+        return np.sum([((self.maturityGrid[_nu+1]-self.maturityGrid[_nu])*(forwardCurve[_nu])*(np.dot(self.sigma(_nu, True), self.sigma(_nu, True))))/(1+((self.maturityGrid[_nu+1]-self.maturityGrid[_nu])*(forwardCurve[_nu]))) for _nu in nu])
 
     #calculate drift under martingale discretization, type = 1
     def martingaleDrift(self):

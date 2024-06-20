@@ -59,19 +59,21 @@ class LIBORSim(SolutionScheme):
                 ares.wait()    
         return  
     
-    def simulate(self, epoch = 0):
+    def simulate(self, volatility = Parameters.volatility, epoch = 0):
         print(self.matrix.shape)
         self.epoch = epoch
         self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
+        self.model.volatility = volatility
         self.execute()
         print("Processing done!") 
 
      #Summary from the sample paths
     def analyze(self, epoch = 0):
         self.epoch = epoch
-        self.matrix = np.mean(self.matrix, axis=0)
-        df = pd.DataFrame(self.matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=self.model.timeGrid)
-        df.index.name = "Time"
-        print("Post-Processing done!") 
+        matrix = np.reshape(self.matrix, (-1, self.matrix.shape[-1]))
+        tuples = [(i, j) for j in self.model.timeGrid for i in range(1, self.iter + 1)]
+        index = pd.MultiIndex.from_tuples(tuples, names=['iteration', 'time'])
+        df = pd.DataFrame(matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=index.sortlevel(level='iteration')[0])
+        print("Post-Processing done!")
         return df
         

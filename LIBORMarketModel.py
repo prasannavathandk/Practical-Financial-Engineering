@@ -20,6 +20,7 @@ class LIBORModel(ModelInterface):
         self._eta = [np.where(self.maturityGrid > t)[0] for t in self.timeGrid]
         self._n = [np.where(self.maturityGrid <= n)[0] for n in self.maturityGrid]
         self._f = [np.where(self.maturityGrid[:-1] > n)[0] for n in self.maturityGrid[:-1]]
+        self._vol = Parameters.volatility
 
     def distribution(self):
         return hp.stdNormal
@@ -35,7 +36,7 @@ class LIBORModel(ModelInterface):
         #print("LIBORModel.SDE", forwardCurve, ti, n, rv)
         if(self.timeGrid[ti] > self.maturityGrid[n]):
             return None
-        return self._SDE(forwardCurve[n], self.timeGrid[ti]-self.timeGrid[ti-1], rv, self.drift()(self.nu(ti-1, n), forwardCurve), self.volatility(ti))
+        return self._SDE(forwardCurve[n], self.timeGrid[ti]-self.timeGrid[ti-1], rv, self.drift()(self.nu(ti-1, n), forwardCurve), self.sigma(ti))
     
     def choleskyFactor(self):
          pass 
@@ -55,11 +56,18 @@ class LIBORModel(ModelInterface):
 
     @bondPrices.setter
     def bondPrices(self, value):
-        self._bp = value   
-    
-    def volatility(self, t, maturity = False):
-        #print("SpotMeasure.volatility", t)
-        return self.timeGrid[t]*(Parameters.volatility/100) if maturity is False else self.maturityGrid[t]*(Parameters.volatility/100)
+        self._bp = value
+         
+    @property
+    def volatility(self):
+        return self._vol
+
+    @volatility.setter
+    def volatility(self, value):
+        self._vol = value
+
+    def sigma(self, t, maturity = False):
+        return self.timeGrid[t]*(self.volatility/100) if maturity is False else self.maturityGrid[t]*(self.volatility/100)
 
     #Implementation of general drift
     @abstractmethod

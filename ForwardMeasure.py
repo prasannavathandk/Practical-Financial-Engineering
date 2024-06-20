@@ -10,7 +10,7 @@ class ForwardMeasure(LIBORModel):
     #calculate drift under forward measure for a certain index, type = 0
     def genDrift(self, nu, forwardCurve):
         #print("ForwardMeasure.genDrift", nu, forwardCurve)
-        return -1*np.sum([((self.maturityGrid[_nu]-self.maturityGrid[_nu - 1])*(forwardCurve[_nu])*(np.dot(self.volatility(_nu, True), self.volatility(_nu, True))))/(1+((self.maturityGrid[_nu]-self.maturityGrid[_nu-1])*(forwardCurve[_nu]))) for _nu in nu])
+        return -1*np.sum([((self.maturityGrid[_nu]-self.maturityGrid[_nu - 1])*(forwardCurve[_nu])*(np.dot(self.sigma(_nu, True), self.sigma(_nu, True))))/(1+((self.maturityGrid[_nu]-self.maturityGrid[_nu-1])*(forwardCurve[_nu]))) for _nu in nu])
 
     #calculate drift under martingale discretization, type = 1
     def martingaleDrift(self):

@@ -13,8 +13,8 @@ class Calibrator:
     def calibrate(self):
         return self.optimize()
     
-    def objectiveFunc(initVol, pricer, marketPrices):
-        estimates: np.array = pricer.estimate(initVol)
+    def objectiveFunc(volatility, pricer, marketPrices):
+        estimates: np.array = pricer.estimate(volatility)
         grounds: np.array = marketPrices
         squared_diff = np.sum((estimates - grounds)**2)
         return squared_diff

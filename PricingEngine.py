@@ -77,13 +77,19 @@ class PricingEngine:
         else:
             return 0
         
-    def Swaption(self, StartDate: float, EndDate: float, Nominal: float, Strike: float, Frequency: float):
+    def Swaption(self, T: float, timepoint: float, StartDate: float, EndDate: float, Nominal: float, Strike: float, FloatingRate: float, Frequency: float):
 
         # Check if Intervalls alling
         if self.intervals[0] != 1 / Frequency:
             raise ValueError("Intervalls not aligned with Frequency")
+        
+        if T == timepoint:
+            return 
+        else:
+            return 0
+        
 
-    def VanillaSwap(self, StartDate: float, EndDate: float, Nominal: float, FixedRate: float, Frequency: float):
+    def VanillaSwap(self, T: float,  StartDate: float, EndDate: float, Nominal: float, FixedRate: float, FloatingRate: float, Frequency: float):
 
         # Check if Intervalls alling
         if self.intervals[0] != 1 / Frequency:
@@ -91,8 +97,6 @@ class PricingEngine:
         
          # Calculate fixed leg cash flows
         fixed_cash_flows = [FixedRate * Nominal] * (EndDate - StartDate)*Frequency
-        
-
         
 
     def SwapRate(self, StartDate: float, EndDate: float, Frequency: float):

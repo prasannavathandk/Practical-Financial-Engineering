@@ -12,9 +12,8 @@ nofCores = multiprocessing.cpu_count()
 
 def trigger(epoch):
     print("---Epoch %i started---" %(epoch+1)) 
-    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatility=Parameters.volatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
-    simulator.simulate(epoch=epoch) 
-    df = simulator.analyze()
+    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatility=Parameters.intervalVolatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
+    df = simulator.simulate(epoch=epoch).analyze()
     df["epoch"] = epoch+1 
     df.set_index('epoch', append=True, inplace=True)  
     print(df.head())

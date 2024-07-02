@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import math
 from IModel import ModelInterface
 from NumericalSolver import SolutionScheme
 import multiprocessing
@@ -36,7 +37,7 @@ class LIBORModel(ModelInterface):
         #print("LIBORModel.SDE", forwardCurve, ti, n, rv)
         if(self.timeGrid[ti] > self.maturityGrid[n]):
             return None
-        return self._SDE(forwardCurve[n], self.timeGrid[ti]-self.timeGrid[ti-1], rv, self.drift()(self.nu(ti-1, n), forwardCurve), self.sigma(ti))
+        return self._SDE(forwardCurve[n], self.timeGrid[ti]-self.timeGrid[ti-1], rv, self.drift()(ti, n, self.nu(ti-1, n), forwardCurve), self.sigma(ti, n))
     
     def choleskyFactor(self):
          pass 
@@ -66,9 +67,9 @@ class LIBORModel(ModelInterface):
     def volatility(self, value):
         self._vol = value
 
-    def sigma(self, t, maturity = False):
-        return self.timeGrid[t]*(self.volatility/100) if maturity is False else self.maturityGrid[t]*(self.volatility/100)
-
+    def sigma(self, t, n):
+        return (self.timeGrid[t])*self.volatility[n]/100
+                
     #Implementation of general drift
     @abstractmethod
     def genDrift(self):

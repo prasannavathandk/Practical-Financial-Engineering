@@ -15,11 +15,12 @@ class PricingEngine:
     def PricingMethods(self):
         methods = {
             'ZeroCouponBond': self.ZerocCouponBond,
-            'VanillaCouponBond': self.VanillaCouponBond
+            'VanillaCouponBond': self.VanillaCouponBond,
+            'Swaption': self.Swaption,
         }
         return methods
 
-
+    # Main Function to price the asset ------------------------------------------------------------------------------
     def pricing_routine(self, asset, pricing_parameter = None, time_precision = 1):
 
         M = len(self.initial_curve)
@@ -78,7 +79,7 @@ class PricingEngine:
             return 0
         
 
-    def VanillaSwap(self, T: float,  StartDate: float, EndDate: float, Nominal: float, FixedRate: float, FloatingRate: float, Frequency: float, iteration: int):
+    def VanillaSwap(self, T: float,  StartDate: float, EndDate: float, Nominal: float, FixedRate: float, Frequency: float, iteration: int):
 
         # Check if Intervalls alling
         if self.intervals[0] != 1 / Frequency:
@@ -103,15 +104,15 @@ class PricingEngine:
     
         return pv_floating_leg - sum_discount_factors
     
-    
-    def Swaption(self, T: float, timepoint: float, StartDate: float, EndDate: float, Nominal: float, Strike: float, FloatingRate: float, Frequency: float, iteration: int):
+
+    def Swaption(self, T: float, timepoint: float, StartDate: float, EndDate: float, Nominal: float, Strike: float, Frequency: float, iteration: int):
 
         # Check if Intervalls alling
         if self.intervals[0] != 1 / Frequency:
             raise ValueError("Intervalls not aligned with Frequency")
         
         if T == timepoint:
-            swapPrice = self.VanillaSwap(T, StartDate, EndDate, Nominal, FixedRate=Strike, FloatingRate=FloatingRate, Frequency=Frequency, iteration=iteration)
+            swapPrice = self.VanillaSwap(T, StartDate, EndDate, Nominal, FixedRate=Strike, Frequency=Frequency, iteration=iteration)
             return swapPrice
         else:
             return 0

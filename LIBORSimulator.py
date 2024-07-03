@@ -78,3 +78,5 @@ class LIBORSim(SolutionScheme):
         print("Post-Processing done!")
         return df
         
+def LIBORMeta(volatility):
+    return LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, volatility=volatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))

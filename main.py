@@ -2,17 +2,19 @@ import multiprocessing
 import warnings
 
 import pandas as pd
+from AnalyticalPricer import Swaptions
+from Calibrator import Calibrator
 from Parameters import Parameters 
 import numpy as np
 import Helper as hp
-from LIBORSimulator import LIBORSim
+from LIBORSimulator import LIBORMeta, LIBORSim
 import NumericalSolver
 
 nofCores = multiprocessing.cpu_count()
 
 def trigger(epoch):
-    print("---Epoch %i started---" %(epoch+1)) 
-    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatility=Parameters.intervalVolatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
+    print("---Epoch %i started---" %(epoch+1))
+    simulator = LIBORMeta(volatility=Parameters.intervalVolatility)
     df = simulator.simulate(epoch=epoch).analyze()
     df["epoch"] = epoch+1 
     df.set_index('epoch', append=True, inplace=True)  
@@ -38,15 +40,22 @@ def main():
         print("Simulation initiate...", timer.tick) 
         timer.start()   
 
-        df = [trigger(ep) for ep in range(Parameters.epoch)]
+        # df = [trigger(ep) for ep in range(Parameters.epoch)]
+        # print("----------------------------------")
+        # print("Result Summary:")
+        # output = pd.concat(df).sort_index()
+        # output.info()
+        # output.describe(include='all')
+        # output.to_csv("Simulation-SpotMeasure-General.csv")
+        # hp.plotDF(output.loc[(1,1)], title="Curve-SpotMeasure-General", clear=False)
+        # hp.showPLot()
+
         print("----------------------------------")
-        print("Result Summary:")
-        output = pd.concat(df).sort_index()
-        output.info()
-        output.describe(include='all')
-        output.to_csv("Simulation-SpotMeasure-General.csv")
-        hp.plotDF(output.loc[(1,1)], title="Curve-SpotMeasure-General", clear=False)
-        hp.showPLot()
+        print("Volatitlity Calibration")
+        derivative = Parameters.derivatives['Swaption']
+        derivative['Price'] = Swaptions(derivative).price()
+        calibrator = Calibrator(derivative=derivative)
+        print(calibrator.calibrate())
          
     print("Simulation complete :) ...", timer.tock)
 

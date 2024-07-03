@@ -14,8 +14,8 @@ class LIBORModel(ModelInterface):
 
     def __init__(self, maturity, prices, type = 0) -> None:
         self.type = type
-        self._mg = maturity
-        self._bp = prices
+        self._mg = np.array(maturity)
+        self._bp = np.array(prices)
         self._tg = hp.discretize(self._mg)
         self._dr = self.martingaleDrift if self.type == 1 else self.genDrift
         self._eta = [np.where(self.maturityGrid > t)[0] for t in self.timeGrid]

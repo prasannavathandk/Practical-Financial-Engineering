@@ -1,16 +1,24 @@
+import multiprocessing
 import numpy as np
-import math 
+import math
+
+from AnalyticalPricer import Swaptions
+from LIBORSimulator import LIBORMeta, LIBORSim
+from Parameters import Parameters 
 
 
 class PricingEngine:
 
     '''
     '''
-    def __init__(self, simulation, initial_curve, intervals) -> None:
-        self.simulation = simulation
-        self.initial_curve = initial_curve
-        self.intervals = intervals
-        self.iterations = int(simulation.epoch.max())
+    # def __init__(self, simulation, initial_curve, intervals) -> None:
+    #     self.simulation = simulation
+    #     self.initial_curve = initial_curve
+    #     self.intervals = intervals
+    #     self.iterations = int(simulation.epoch.max())
+
+    def __init__(self, derivative) -> None:
+        self.derivative = derivative
 
     def PricingMethods(self):
         methods = {
@@ -120,3 +128,10 @@ class PricingEngine:
         swap_rate = pv_floating_leg / sum_discount_factors
         
         return swap_rate
+
+
+    def estimate(self, volatility: np.array):
+        simulator = LIBORMeta(volatility)
+        df = simulator.simulate(epoch=0).analyze()
+        print(df.head())
+        return self.derivative['Price']

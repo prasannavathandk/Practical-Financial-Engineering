@@ -16,8 +16,8 @@ class LIBORSim(SolutionScheme):
         else:    
             model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices)
         super().__init__(model=model, iter=iter)
-        model.volatility = volatility
-        self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, row=maturity, column=discretizedTime
+        model.volatility = np.array(volatility)
+        self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, column=discretizedTime, row=maturity
         self._ran = model.distribution()(self._sm.shape)
         self.epoch = 0 
         print("Pre-Processing done!") 
@@ -66,6 +66,7 @@ class LIBORSim(SolutionScheme):
         self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
         print("Processing done!") 
+        return self
 
      #Summary from the sample paths
     def analyze(self, epoch = 0):
@@ -77,3 +78,5 @@ class LIBORSim(SolutionScheme):
         print("Post-Processing done!")
         return df
         
+def LIBORMeta(volatility):
+    return LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, volatility=volatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))

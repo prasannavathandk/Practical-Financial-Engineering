@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import time, datetime
 from Parameters import Parameters 
-from scipy.stats import norm as std
 
 #a vector of standard normal variables
 def stdNormal(shape):
@@ -59,9 +58,3 @@ def maturity_to_years(maturity):
     elif 'year' in maturity:
         return int(maturity.split()[0])
     return None
-
-def blackCapPrice(forward, strike, maturity, volatility, notional, riskFreeRate):
-    d1 = (np.log(forward / strike) + (((volatility**2)*maturity) / 2)) / (volatility * np.sqrt(maturity))
-    d2 = d1 - (volatility*np.sqrt(maturity))
-    caplet_price = notional*np.exp(-riskFreeRate * maturity) * (forward*std.cdf(d1) - strike*std.cdf(d2))
-    return caplet_price

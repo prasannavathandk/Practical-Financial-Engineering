@@ -13,23 +13,14 @@ class Parameters:
         }
 
     derivatives = {
-        'Prototype': {
-            'Exercise': 'European',
-            'type': 'Payer',
-            'Frequency': None,  # Quarterly
-            'Discount': None,  # Discount Factor
-            'Notional': None,
-            'StrikeType': 'ATM',  # Same as the forward rate at that time
-            'Strike': None,  # Swap/Fixed Rate
-            'Tenor': None,  # Interest Rate Swap Tenor
-            'Maturity': None,  # Option maturity (exercies) dates in years
-            'Midrate': None,
-            'ForwardRate': None,  # Forward Rate at time of exercise
-            'RiskFreeRate': None,
-            'Price': None
-        },
         'ZeroCouponBond': {
-
+            'Maturity': 10,  # Maturity in years
+            'FaceValue': 100,  # Face Value of Bond
+            'Price': 90,  # Price of Bond
+            'YieldRate': 5,  # Yield of Bond,
+            'CouponRate': 0,  # Coupon Rate
+            'riskFreeRate': 3,  # Risk Free Rate,
+            'Payoff': None
         },
         'VanillaCouponBond': {
 
@@ -39,7 +30,7 @@ class Parameters:
         },
         'Swaption': {
             'Exercise': 'European',
-            'type': 'Payer',
+            'Type': 'Payer',
             'Frequency': 0.25,  # Quarterly
             'Discount': 0.95,  # Discount Factor
             'Notional': 10**6,
@@ -47,10 +38,11 @@ class Parameters:
             'Strike': None,  # Swap/Fixed Rate
             'Tenor': 10,  # Interest Rate Swap Tenor
             'Maturity': [1, 2, 3, 4, 5, 6, 7, 8, 9],  # Option maturity (exercies) dates in years
-            'Midrate': [31.15, 30.77, 29.98, 29.51, 29.12, 29.09, 29.21, 29.35, 29.57],
+            'Volatility': [31.15, 30.77, 29.98, 29.51, 29.12, 29.09, 29.21, 29.35, 29.57],
             'ForwardRate': [0.29067, 0.69631, 1.307513, 2.339118, 2.293654, 0.267757, 0.130832, 2.610498, 5.584448],  # Forward Rate at time of exercise
             'RiskFreeRate': 3,
-            'Price': None
+            'Price': None,
+            'Payoff': lambda forward, strike, period: period * max(forward - strike, 0)
         }
     }
     

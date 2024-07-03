@@ -1,4 +1,5 @@
 import numpy as np
+from DerivativePricer import DerivativePricing
 import Helper as hp
 from scipy.optimize import minimize
 
@@ -7,10 +8,9 @@ from Parameters import Parameters
 from PricingEngine import PricingEngine
 
 class Calibrator:
-    def __init__(self, derivative: Parameters.derivatives['Prototype']):
+    def __init__(self, pricer : DerivativePricing):
         print("Calibrator::init")
-        self.derivative = derivative
-        self.pricer = PricingEngine(derivative)   
+        self.pricer = pricer  
         Calibrator.volHist = list()
 
     @property
@@ -18,16 +18,9 @@ class Calibrator:
         return self._pricer
 
     @pricer.setter
-    def pricer(self, value:  PricingEngine):
+    def pricer(self, value:  DerivativePricing):
         self._pricer = value
 
-    @property
-    def derivative(self):
-        return self._derivative
-
-    @derivative.setter
-    def derivative(self, value: Parameters.derivatives['Prototype']):
-        self._derivative = value
 
     def calibrate(self):
         print("Calibrator::calibrate")
@@ -35,11 +28,11 @@ class Calibrator:
         hp.plotNP(Calibrator.volHist, title="Volatility History", clear=False)
         return vol
     
-    def objectiveFunc(volatility, prices, pricer):
-        print("Calibrator::objectiveFunc", volatility, prices, pricer)
+    def objectiveFunc(volatility, pricer):
+        print("Calibrator::objectiveFunc", volatility, pricer)
         Calibrator.volHist.append(volatility)
         estimates: np.array = pricer.estimate(volatility)
-        grounds: np.array = prices
+        grounds: np.array = pricer.price
         squared_diff = np.sum((estimates - grounds)**2)
         return squared_diff
 
@@ -47,7 +40,7 @@ class Calibrator:
         print("Calibrator::optimize")
         initVol = Parameters.intervalVolatility
         result = minimize(fun=Calibrator.objectiveFunc, x0=initVol,
-                  args=(self.derivative['Price'], self.pricer),
+                  args=(self.pricer),
                   method='BFGS', options={'disp': True})
         return result.x
     

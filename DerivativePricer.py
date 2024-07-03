@@ -1,30 +1,19 @@
+import pandas as pd
 from scipy.stats import norm as std
 import numpy as np
-from Parameters import Parameters
 
-class Swaptions:
+class DerivativePricing:
 
-    def __init__(self, swaption : Parameters.derivatives['Prototype']):
-        self.swaption = swaption
-
-    def price(self):
-        maturity = self.swaption['Maturity']
-        swaptionPrice = np.zeros(len(maturity))
-        for i in range(len(swaptionPrice)):
-            discount = self.swaption['Discount']
-            forward = self.swaption['ForwardRate'][i]/100
-            strike = forward
-            maturity = self.swaption['Maturity'][i]
-            volatility = self.swaption['Midrate'][i]/100
-            notional = self.swaption['Notional']
-            riskFreeRate = self.swaption['RiskFreeRate']
-            frequency = self.swaption['Frequency']
-            #print("AnalyticalPricer::price: ",discount, forward, strike, maturity, volatility, notional, riskFreeRate, frequency)
-            swaptionPrice[i] = PricingFormulae.blackSwaptionPrice(discount, forward, strike, maturity, volatility, notional, riskFreeRate, frequency)
-        
-        return swaptionPrice
+    def __init__(self, forwardCurve : pd.DataFrame):
+        self.forwardCurve = forwardCurve
     
-class PricingFormulae:
+    @property
+    def forwardCurve(self):
+        return self._forwardCurve
+
+    @forwardCurve.setter
+    def forwardCurve(self, curve):
+        self._forwardCurve = curve
 
     def blackCapPrice(forward, strike, maturity, volatility, notional, riskFreeRate):
         d1 = (np.log(forward / strike) + (((volatility**2)*maturity) / 2)) / (volatility * np.sqrt(maturity))

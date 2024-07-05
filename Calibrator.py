@@ -30,17 +30,16 @@ class Calibrator:
     
     def objectiveFunc(volatility, pricer):                                                                     
         print("Calibrator::objectiveFunc", volatility, pricer)
-        Calibrator.volHist.append(volatility)
-        pricer.estimate(volatility)
-        estimates: np.array = pricer.simulatedPrice                                                                                                                                   
-        grounds: np.array = pricer.marketPrice
+        Calibrator.volHist.append(volatility)        
+        estimates: np.array = pricer.simulatedPricing(volatility)                                                                                                                           
+        grounds: np.array = pricer.analyticalPricing()
         print("Calibrator::objectiveFunc: ", "est: ", estimates, "gr: ", grounds)
         squared_diff = np.sum((estimates - grounds)**2)
         return squared_diff
 
     def optimize(self):
         print("Calibrator::optimize")
-        initVol = Parameters.intervalVolatility
+        initVol = self.pricer.config['Volatility']
         result = minimize(fun=Calibrator.objectiveFunc, x0=initVol,
                   args=(self.pricer),
                   method='BFGS', options={'disp': True})

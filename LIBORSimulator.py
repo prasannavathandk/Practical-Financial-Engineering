@@ -74,11 +74,6 @@ class LIBORSim(SolutionScheme):
         matrix = np.reshape(self.matrix, (-1, self.matrix.shape[-1]))
         tuples = [(i, j) for j in self.model.timeGrid for i in range(1, self.iter + 1)]
         index = pd.MultiIndex.from_tuples(tuples, names=['iteration', 'time'])
-        df = pd.DataFrame(matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=index.sortlevel(level='iteration')[0])
+        df = pd.DataFrame(matrix, columns=self.model.maturityGrid[:-1], index=index.sortlevel(level='iteration')[0])
         print("Post-Processing done!")
         return df
-        
-def LIBORMetaSwaption(volatility, maturity = Parameters.maturityDates, tenor = 0, scale = Parameters.tradingDays):
-    _maturity = [ T + tenor for T in maturity]
-    maturity = np.sort(np.concatenate([maturity, _maturity]))
-    return LIBORSim(maturity=maturity, prices=Parameters.bondPrices, volatility=volatility, scale=scale, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))

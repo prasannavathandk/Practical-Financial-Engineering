@@ -1,112 +1,112 @@
+import multiprocessing
 import numpy as np
 import pandas as pd
 from DerivativePricer import DerivativePricing
-from LIBORSimulator import LIBORMetaSwaption
+from NumericalSolver import SolutionScheme
 from Parameters import Parameters
+from itertools import accumulate
 
 class SwaptionPricing(DerivativePricing):
 
-    def __init__(self, swaption : Parameters.derivatives['Swaption'], forwardCurve : pd.DataFrame):
-        super().__init__(forwardCurve)
+    def __init__(self, swaption : Parameters.derivatives['Swaption'], simulator : SolutionScheme):
+        super().__init__(swaption, simulator)
         self._swaption = swaption
-        self._exercise = swaption['Exercise']
-        self._type = swaption['Type']
-        self._frequency = swaption['Frequency']
-        self._discount = swaption['Discount']
-        self._notional = swaption['Notional']
-        self._strikeType = swaption['StrikeType']
-        self._strike = swaption['Strike']
-        self._tenor = swaption['Tenor']
-        self._maturity = swaption['Maturity']
-        self._volatility = swaption['Volatility']
-        self._forwardRate = swaption['ForwardRate']
-        self._riskFreeRate = swaption['RiskFreeRate']
-        self._analyticalPrice = swaption['Price']
-        self._payoff = swaption['Payoff']
-        self._marketPrice = swaption['Price']
-        self._analyticalPrice = self.analyticalPricing()
-        self._marketPrice = self._analyticalPrice
-        self._simulatedPrice = None
-        
+
     def analyticalPricing(self):
-        maturities = self._maturity
+        maturities = self._swaption['Maturity']
         swaptionPrice = np.zeros(len(maturities))
         for i in range(len(swaptionPrice)):
-            discount = self._discount
-            forward = self._forwardRate[i]/100
+            discount = self._swaption['Discount']
+            forward = self._swaption['ForwardRate'][i]/100
             strike = forward
             maturity = maturities[i]
-            volatility = self._volatility[i]/100
-            notional = self._notional
-            riskFreeRate = self._riskFreeRate
-            frequency = self._frequency
-            swaptionPrice[i] = DerivativePricing.blackSwaptionPrice(discount, forward, strike, maturity, volatility, notional, riskFreeRate, frequency)
+            marketVol = self._swaption['MarketData'][i]/100
+            notional = self._swaption['Notional']
+            riskFreeRate = self._swaption['RiskFreeRate']
+            frequency = self._swaption['Frequency']
+            swaptionPrice[i] = DerivativePricing.blackSwaptionPrice(discount, forward, strike, maturity, marketVol, notional, riskFreeRate, frequency)
         return swaptionPrice   
     
-    def simulate(self, volatility: np.array):
-        simulator = LIBORMetaSwaption(volatility, maturity= self._maturity, tenor=self._tenor, scale=1)
-        forwardCurve = simulator.simulate(epoch=0).analyze()
-        forwardCurve = forwardCurve.reset_index(level='time', drop=False)
-        return forwardCurve
+    def GPayoff(self, instrument: pd.Series, T: float) -> float:
+        # print("SwapPricer::GPayoff")
+        # print("SwapPricer::GPayoff: ", "instrumnet: ", instrument, "T: ", T)
+        instrument.name = "rate"
+        instrument = instrument.apply(lambda x: max(x, 0))
+        instrument = instrument.reset_index(drop=False)
+        # print("SwapPricer::GPayoff: ", "instrument: ", instrument)
+        notional = self._swaption['Notional']
+        fixed = instrument[instrument['index'] == T]['rate'].values[0]
+        # print("SwapPricer::GPayoff: ", "fixed: ", fixed, "notional: ", notional)
+        instrument = instrument[instrument['index'] > T]
+        instrument = instrument[instrument['index'] <= self._swaption['Tenor'] + T]
+        # print("SwapPricer::GPayoff: ", "instrument: ", instrument)
+        payoff = list(instrument["rate"].apply(
+            lambda x: self._swaption['Payoff'](x, fixed, self._swaption['Frequency'], notional)
+        ).values)
+        # print("SwapPricer::GPayoff: ", "payoff: ", payoff)
+        period = list(instrument['index'].apply(
+             lambda x: (x - T)
+        ).values)
+        # print("SwapPricer::GPayoff: ", "period: ", period)
+        value = [(payoff)*(1/(1 + period*rate)) for payoff, period, rate in zip(payoff, period, list(instrument['rate'].values))]
+        # print("SwapPricer::GPayoff: ", "value: ", value, "sum: ", np.sum(value))
+        return np.sum(value)
 
-    def GPayoff(self, samplePath: pd.DataFrame, T: float) -> float:
-            #print("SwapPricer::GPayoff")
-            maturity = self._maturity
-            index = maturity.index(T)
-            notional = self._notional
-            fixed = samplePath['T' + str(T)][samplePath['time'] == T].values[0]
-            samplePath = samplePath[samplePath['time'] > T]
-            samplePath['payoff'] = samplePath.apply(
-                lambda x: self._payoff(x['T' + str(T)], fixed, self._frequency, notional), 
-                axis=1
-            )
-            samplePath['discountFactor'] = samplePath[['time', 'T' + str(T)]].apply(
-                 lambda x: 1/(1 + x[1])**(x[0] - T),
-                 axis=1
-            )
-            discountedPayoff = samplePath['payoff'] * samplePath['discountFactor']
-            print("SwapPricer::GPayoff: ", "discountedPayoff: ", discountedPayoff)
-            return discountedPayoff.sum()
+    def simulatedPricing(self, volatility: np.array):   
 
-    def simulatedPricing(self, volatility: np.array): 
+        def micro(samplePoints: pd.Series) -> float:
+            # print("SwapPricer::micro")
+            # print("SwapPricer::micro", samplePoints)
 
-        maturity = self._maturity       
-
-        def micro(samplePath: pd.DataFrame, T: float) -> float:
-            #print("SwapPricer::micro")
-            index = maturity.index(T)
-            optionPeriod = np.concatenate([[0], np.array(maturity[0:index])])
-            interval = np.diff(optionPeriod)
-            #print(optionPeriod, interval)            
-            #print("SwapPricer::micro: ", "payoff: ", payoff)
-            discount = 1
-            for n, Tn in enumerate(optionPeriod[1:]):
-                #print("deflatedPayoff", n, Tn, interval[n], samplePath['T' + str(Tn)][samplePath['time'] == Tn].values)
-                discount *= 1/(1 + interval[n] * samplePath['T' + str(Tn)][samplePath['time'] == Tn].values[0])
-            #print("SwapPricer::micro: ", "price: ", payoff * discount) 
-            payoff = self.GPayoff(samplePath=samplePath, T=T) 
-            print("SwapPricer::micro: ", "payoff: ", payoff, "discount: ", discount, "price: ", payoff * discount)  
-            return payoff*discount
+            discountFactor = np.array(list(accumulate(
+                list(samplePoints.values), 
+                lambda x, y: (1/(1+x))*(1/(1+y))
+            )))
+            # print("SwapPricer::micro: ", "discountFactor: ", discountFactor)
+            price = np.array([self.GPayoff(instrument=samplePoints, T=int(ind)) for ind in samplePoints.index][0])
+            # print("SwapPricer::micro: ", "price: ", price)
+            PVPrice = np.multiply(price, discountFactor)
+            # print("SwapPricer::micro: ", "PVPrice: ", PVPrice)
+            return PVPrice
         
         def meso(samplePath: pd.DataFrame) -> pd.Series:
-            #print("SwapPricer::meso")
-            price = np.zeros(len(maturity))
-            for n, T in enumerate(maturity):
-                price[n] = micro(samplePath, T)
-            print("SwapPricer::meso: ", "price: ", price)
-            return pd.Series(price, index=maturity)
+            # print("SwapPricer::meso")
+            samplePath = samplePath.reset_index(level='iteration', drop=True)
+            # print("SwapPricer::meso: ", "samplePath: ", samplePath)
+            _terRate = samplePath.apply(
+                    lambda x: x.iloc[int(x.name)],
+                    axis=0
+                )
+            # print("SwapPricer::meso: ", "_terRate: ", _terRate)
+            terRate = pd.Series(_terRate, index=samplePath.columns)
+            terRate.name = -1
+            terRate = terRate.to_frame().T
+            # print("SwapPricer::meso: ", "terFor: ", terRate)
+            samplePath = pd.concat(
+                objs = [samplePath, terRate]
+            )
+            # print("SwapPricer::meso: ", "samplePath: ", samplePath.iloc[-1])
+            price = micro(samplePoints=samplePath.iloc[-1])
+            return pd.Series(price)
         
         def macro(samplePaths: pd.DataFrame) -> None:
-            #print("SwapPricer::macro")
+            # print("SwapPricer::macro")
             price = samplePaths.groupby('iteration', group_keys=False).apply(meso).mean()
-            #print("SwapPricer::macro: ", "price: ", price)
-            self.simulatedPrice = np.array(price.values)
-            print("SwapPricer::macro: ", "price: ", self.simulatedPrice)
-            return True
+            # print("SwapPricer::macro: ", "price: ", price)
+            return np.array(price.values)[self._swaption['Maturity']]
 
-        samplePaths = self.simulate(volatility)
-        return macro(samplePaths)
+        simulation = self.simulate(volatility)
+        # print("SwapPricer::simulatedPricing: ", simulation.head())
+        macro(simulation)
+        return None #
 
-    def estimate(self, volatility: np.array):
-        self.simulatedPricing(volatility)
-    
+    def simulate(self, volatility: np.array):
+        # print("SwapPricer::simulate")
+        simulator = self.SimulatorMeta(volatility)
+        forwardCurve = simulator.simulate(epoch=0).analyze()
+        return forwardCurve    
+
+    def SimulatorMeta(self, volatility):
+        # print("SwapPricer::LIBORMeta")
+        print("SwapPricer::LIBORMeta: ", self.config)
+        return self.simulator(maturity=self.config['Maturity'], prices=self.config['Prices'], volatility=self.config['Volatility'], scale=self.config['Scale'], measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))    

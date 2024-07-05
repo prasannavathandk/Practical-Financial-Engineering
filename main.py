@@ -6,7 +6,7 @@ from Calibrator import Calibrator
 from Parameters import Parameters 
 import numpy as np
 import Helper as hp
-from LIBORSimulator import LIBORMetaSwaption, LIBORSim
+from LIBORSimulator import LIBORSim
 import NumericalSolver
 from SwaptionPricer import SwaptionPricing
 
@@ -14,11 +14,11 @@ nofCores = multiprocessing.cpu_count()
 
 def trigger(epoch):
     print("---Epoch %i started---" %(epoch+1))
-    simulator = LIBORMetaSwaption(volatility=Parameters.intervalVolatility)
+    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatility=Parameters.intervalVolatility, scale = 1, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
     df = simulator.simulate(epoch=epoch).analyze()
     df["epoch"] = epoch+1 
     df.set_index('epoch', append=True, inplace=True)  
-    print(df.head())
+    #print(df.head())
     df = df.swaplevel("epoch", "time").swaplevel("epoch", "iteration")
     del simulator
     timer.stop() 
@@ -40,23 +40,25 @@ def main():
         print("Simulation initiate...", timer.tick) 
         timer.start()   
 
-        # df = [trigger(ep) for ep in range(Parameters.epoch)]
-        # print("----------------------------------")
-        # print("Result Summary:")
-        # output = pd.concat(df).sort_index()
-        # output.info()
-        # output.describe(include='all')
-        # output.to_csv("Simulation-SpotMeasure-General.csv")
-        # hp.plotDF(output.loc[(1,1)], title="Curve-SpotMeasure-General", clear=False)
-        # hp.showPLot()
-
+        df = [trigger(ep) for ep in range(Parameters.epoch)]
         print("----------------------------------")
-        print("Volatitlity Calibration")
-        derivative = Parameters.derivatives['Swaption']
-        pricer = SwaptionPricing(derivative, None)
-        print(pricer.analyticalPricing())
-        calibrator = Calibrator(pricer=pricer)
-        print(calibrator.calibrate())
+        print("Result Summary:")
+        output = pd.concat(df).sort_index()
+        output.info()
+        output.describe(include='all')
+        output.to_csv("Simulation-SpotMeasure-General.csv")
+        plotOut = output.groupby('time').mean()
+        #print(plotOut.head())
+        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
+        hp.showPLot()
+
+        # print("----------------------------------")
+        # print("Volatitlity Calibration")
+        # derivative = Parameters.derivatives['Swaption']
+        # pricer = SwaptionPricing(derivative, LIBORSim)
+        # print(pricer.analyticalPricing())
+        # calibrator = Calibrator(pricer=pricer)
+        # print(calibrator.calibrate())
          
     print("Simulation complete :) ...", timer.tock)
 

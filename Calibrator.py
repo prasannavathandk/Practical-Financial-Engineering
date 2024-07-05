@@ -21,18 +21,20 @@ class Calibrator:
     def pricer(self, value:  DerivativePricing):
         self._pricer = value
 
-
     def calibrate(self):
         print("Calibrator::calibrate")
         vol = self.optimize()
-        hp.plotNP(Calibrator.volHist, title="Volatility History", clear=False)
+        #hp.plotNP(Calibrator.volHist, title="Volatility History", clear=False)
+        print("Calibrator::calibrate: RESULT", vol)
         return vol
     
-    def objectiveFunc(volatility, pricer):
+    def objectiveFunc(volatility, pricer):                                                                     
         print("Calibrator::objectiveFunc", volatility, pricer)
         Calibrator.volHist.append(volatility)
-        estimates: np.array = pricer.estimate(volatility)
-        grounds: np.array = pricer.price
+        pricer.estimate(volatility)
+        estimates: np.array = pricer.simulatedPrice                                                                                                                                   
+        grounds: np.array = pricer.marketPrice
+        print("Calibrator::objectiveFunc: ", "est: ", estimates, "gr: ", grounds)
         squared_diff = np.sum((estimates - grounds)**2)
         return squared_diff
 

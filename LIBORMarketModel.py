@@ -12,11 +12,11 @@ from Parameters import Parameters
 
 class LIBORModel(ModelInterface):
 
-    def __init__(self, maturity, prices, type = 0) -> None:
+    def __init__(self, maturity, prices, scale, type = 0) -> None:
         self.type = type
         self._mg = np.array(maturity)
         self._bp = np.array(prices)
-        self._tg = hp.discretize(self._mg)
+        self._tg = hp.discretize(self._mg, scale)
         self._dr = self.martingaleDrift if self.type == 1 else self.genDrift
         self._eta = [np.where(self.maturityGrid > t)[0] for t in self.timeGrid]
         self._n = [np.where(self.maturityGrid <= n)[0] for n in self.maturityGrid]

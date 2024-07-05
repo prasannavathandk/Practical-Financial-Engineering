@@ -6,7 +6,7 @@ from Calibrator import Calibrator
 from Parameters import Parameters 
 import numpy as np
 import Helper as hp
-from LIBORSimulator import LIBORMeta, LIBORSim
+from LIBORSimulator import LIBORMetaSwaption, LIBORSim
 import NumericalSolver
 from SwaptionPricer import SwaptionPricing
 
@@ -14,7 +14,7 @@ nofCores = multiprocessing.cpu_count()
 
 def trigger(epoch):
     print("---Epoch %i started---" %(epoch+1))
-    simulator = LIBORMeta(volatility=Parameters.intervalVolatility)
+    simulator = LIBORMetaSwaption(volatility=Parameters.intervalVolatility)
     df = simulator.simulate(epoch=epoch).analyze()
     df["epoch"] = epoch+1 
     df.set_index('epoch', append=True, inplace=True)  

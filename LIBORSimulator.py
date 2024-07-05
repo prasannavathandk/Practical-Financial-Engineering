@@ -10,11 +10,11 @@ import Helper as hp
 
 class LIBORSim(SolutionScheme):
 
-    def __init__(self, maturity, prices, volatility, measure=0, type=0, iter = 10):
+    def __init__(self, maturity, prices, volatility, scale = Parameters.tradingDays, measure=0, type=0, iter = 10):
         if(measure == 1):
-            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices)
+            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         else:    
-            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices)
+            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         super().__init__(model=model, iter=iter)
         model.volatility = np.array(volatility)
         self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, column=discretizedTime, row=maturity
@@ -78,5 +78,7 @@ class LIBORSim(SolutionScheme):
         print("Post-Processing done!")
         return df
         
-def LIBORMeta(volatility):
-    return LIBORSim(maturity=Parameters.maturityDates, prices=Parameters.bondPrices, volatility=volatility, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))
+def LIBORMetaSwaption(volatility, maturity = Parameters.maturityDates, tenor = 0, scale = Parameters.tradingDays):
+    _maturity = [ T + tenor for T in maturity]
+    maturity = np.sort(np.concatenate([maturity, _maturity]))
+    return LIBORSim(maturity=maturity, prices=Parameters.bondPrices, volatility=volatility, scale=scale, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(multiprocessing.cpu_count()))

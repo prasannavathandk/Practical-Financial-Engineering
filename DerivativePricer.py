@@ -15,6 +15,30 @@ class DerivativePricing:
     def forwardCurve(self, curve):
         self._forwardCurve = curve
 
+    @property
+    def marketPrice(self):
+        return self._marketPrice
+
+    @marketPrice.setter
+    def marketPrice(self, value):
+        self._marketPrice = value
+
+    @property
+    def analyticalPrice(self):
+        return self._analyticalPrice
+
+    @analyticalPrice.setter
+    def analyticalPrice(self, price):
+        self._analyticalPrice = price
+
+    @property
+    def simulatedPrice(self):
+        return self._simulatedPrice
+
+    @simulatedPrice.setter
+    def simulatedPrice(self, price):
+        self._simulatedPrice = price
+
     def blackCapPrice(forward, strike, maturity, volatility, notional, riskFreeRate):
         d1 = (np.log(forward / strike) + (((volatility**2)*maturity) / 2)) / (volatility * np.sqrt(maturity))
         d2 = d1 - (volatility*np.sqrt(maturity))

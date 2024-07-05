@@ -1,11 +1,12 @@
 import numpy as np
 from LIBORMarketModel import LIBORModel
+from Parameters import Parameters
 from SpotMeasure import SpotMeasure
 
 class ForwardMeasure(LIBORModel):
 
-    def __init__(self, maturity, prices, type = 0):
-        super().__init__(maturity=maturity, prices=prices, type = type)
+    def __init__(self, maturity, prices, scale = Parameters.tradingDays, type = 0):
+        super().__init__(maturity=maturity, prices=prices, scale=scale, type = type)
 
     #calculate drift under forward measure for a certain index, type = 0
     def genDrift(self, t, n, nu, forwardCurve):

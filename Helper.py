@@ -44,11 +44,9 @@ class timer:
 def unitTest(myClass):
     pass
 
-def discretize(arr):
+def discretize(arr, scale=1):
     arr = np.concatenate([[0], np.sort(arr)])
-    arr = [i*(1/Parameters.tradingDays) for i in range(int(arr[-1]*Parameters.tradingDays + 1))]
-    for _ in range(Parameters.scale-1):
-        arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)])) 
+    arr = [i*(1/scale) for i in range(int(arr[-1]*scale + 1))]
     return arr
 
 # Mapping function to convert maturity to years

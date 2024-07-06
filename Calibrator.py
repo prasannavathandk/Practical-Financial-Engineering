@@ -35,6 +35,7 @@ class Calibrator:
         grounds: np.array = pricer.analyticalPricing()
         print("Calibrator::objectiveFunc: ", "est: ", estimates, "gr: ", grounds)
         squared_diff = np.sum((estimates - grounds)**2)
+        print("Calibrator::objectiveFunc: ", "squared_diff: ", squared_diff)
         return squared_diff
 
     def optimize(self):

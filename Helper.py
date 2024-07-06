@@ -1,4 +1,7 @@
+import contextlib
 import functools
+import os
+import sys
 import threading
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,3 +59,8 @@ def maturity_to_years(maturity):
     elif 'year' in maturity:
         return int(maturity.split()[0])
     return None
+
+@contextlib.contextmanager
+def HidePrints():
+    with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+        yield        

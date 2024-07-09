@@ -26,19 +26,34 @@ class Parameters:
 
         },
         'Caplet': {
-
+            'Exercise': 'European',
+            'Type': 'Payer',
+            'Frequency': 1,  # Annually
+            'DiscountFactor': 0.95,  # Discount Factor
+            'Notional': 1000000,
+            'StrikeType': 'ATM',  # Same as the forward rate at that time
+            'Strike': None,  # Swap/Fixed Rate
+            'Tenor': 10,  # Interest Rate Swap Tenor
+            'Maturity': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  # Option maturity (exercies) dates in years
+            'Volatility': [31.15, 30.77, 29.98, 29.51, 29.12, 29.09, 29.21, 29.35, 29.57],
+            'sigma': [10]*10,
+            'ForwardRate': [0.29067, 0.69631, 1.307513, 2.339118, 2.293654, 0.267757, 0.130832, 2.610498, 5.584448],  # Forward Rate at time of exercise
+            'RiskFreeRate': 3,
+            'Price': None,
+            'Payoff': lambda floating, fixed, period: max((floating - fixed), 0) * (period),
+            'BondPricing': lambda faceValue, yieldRate, maturity: [fv/(1 + y/100)**n for n, fv, y in zip(maturity, faceValue, yieldRate)]
         },
         'Swaption': {
             'Exercise': 'European',
             'Type': 'Payer',
             'Frequency': 1,  # Annually
-            'Discount': 0.95,  # Discount Factor
-            'Notional': 1,
+            'DiscountFactor': 0.95,  # Discount Factor
+            'Notional': 1000000,
             'StrikeType': 'ATM',  # Same as the forward rate at that time
             'Strike': None,  # Swap/Fixed Rate
             'Tenor': 10,  # Interest Rate Swap Tenor
             'Maturity': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  # Option maturity (exercies) dates in years
-            'MarketData': [31.15, 30.77, 29.98, 29.51, 29.12, 29.09, 29.21, 29.35, 29.57],
+            'Volatility': [31.15, 30.77, 29.98, 29.51, 29.12, 29.09, 29.21, 29.35, 29.57],
             'ForwardRate': [0.29067, 0.69631, 1.307513, 2.339118, 2.293654, 0.267757, 0.130832, 2.610498, 5.584448],  # Forward Rate at time of exercise
             'RiskFreeRate': 3,
             'Price': None,

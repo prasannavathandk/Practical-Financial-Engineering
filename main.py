@@ -2,13 +2,13 @@ import multiprocessing
 import warnings
 
 import pandas as pd
-from Calibrator import Calibrator
+# from Calibrator import Calibrator
 from Parameters import Parameters 
 import numpy as np
 import Helper as hp
 from LIBORSimulator import LIBORSim
 import NumericalSolver
-from SwaptionPricer import SwaptionPricing
+from CapletPricer import CapletPricing
 
 nofCores = multiprocessing.cpu_count()
 
@@ -54,11 +54,11 @@ def main():
 
         print("----------------------------------")
         print("Volatitlity Calibration")
-        derivative = Parameters.derivatives['Swaption']
-        pricer = SwaptionPricing(derivative, LIBORSim)
-        print(pricer.analyticalPricing())
-        calibrator = Calibrator(pricer=pricer)
-        print(calibrator.calibrate())
+        derivative = Parameters.derivatives['Caplet']
+        pricer = CapletPricing(derivative, LIBORSim)
+        print(pricer.simulatedPricing(volatility=pricer.config['Volatility']))
+        # calibrator = Calibrator(pricer=pricer)
+        # print(calibrator.calibrate())
          
     print("Simulation complete :) ...", timer.tock)
 

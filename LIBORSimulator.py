@@ -10,13 +10,13 @@ import Helper as hp
 
 class LIBORSim(SolutionScheme):
 
-    def __init__(self, maturity, prices, volatility: pd.DataFrame, scale = Parameters.tradingDays, measure=0, type=0, iter = 10):
+    def __init__(self, maturity, prices, volatility: np.array, scale = Parameters.tradingDays, measure=0, type=0, iter = 10):
         if(measure == 1):
             model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         else:    
             model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         super().__init__(model=model, iter=iter)
-        model.volatility = pd.DataFrame(volatility)
+        model.volatility = np.array(volatility).reshape(len(model.maturityGrid)-1, len(model.maturityGrid)-1)
         self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, column=discretizedTime, row=maturity
         self._ran = model.distribution()(self._sm.shape)
         self.epoch = 0

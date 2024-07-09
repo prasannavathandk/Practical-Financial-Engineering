@@ -40,25 +40,25 @@ def main():
         print("Simulation initiate...", timer.tick) 
         timer.start()   
 
-        # df = [trigger(ep) for ep in range(Parameters.epoch)]
-        # print("----------------------------------")
-        # print("Result Summary:")
-        # output = pd.concat(df).sort_index()
-        # output.info()
-        # output.describe(include='all')
-        # output.to_csv("Simulation-SpotMeasure-General.csv")
-        # plotOut = output.groupby('time').mean()
-        # #print(plotOut.head())
-        # hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
-        # hp.showPLot()
-
+        df = [trigger(ep) for ep in range(Parameters.epoch)]
         print("----------------------------------")
-        print("Volatitlity Calibration")
-        derivative = Parameters.derivatives['Caplet']
-        pricer = CapletPricing(derivative, LIBORSim)
-        print(pricer.simulatedPricing(volatility=pricer.config['Volatility']))
-        # calibrator = Calibrator(pricer=pricer)
-        # print(calibrator.calibrate())
+        print("Result Summary:")
+        output = pd.concat(df).sort_index()
+        output.info()
+        output.describe(include='all')
+        output.to_csv("Simulation-SpotMeasure-General.csv")
+        plotOut = output.groupby('time').mean()
+        print(plotOut.head())
+        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
+        hp.showPLot()
+
+        # print("----------------------------------")
+        # print("Volatitlity Calibration")
+        # derivative = Parameters.derivatives['Caplet']
+        # pricer = CapletPricing(derivative, LIBORSim)
+        # print(pricer.simulatedPricing(volatility=pricer.config['Volatility']))
+        # # calibrator = Calibrator(pricer=pricer)
+        # # print(calibrator.calibrate())
          
     print("Simulation complete :) ...", timer.tock)
 

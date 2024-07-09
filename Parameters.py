@@ -63,14 +63,14 @@ class Parameters:
     }
     
     #Input Data to Simulation
-    maturityDates = [1, 2, 3, 4, 5, 6, 7, 8, 9]    #Maturity Dates in years
+    maturityDates = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]    #Maturity Dates in years
     resetPeriod = 0.25        #Reset Period of 3 months
     faceValue = 100           #Face Value of Bond
     yieldRate = 5             #Yield of Bond
     _faceValue = [faceValue]*len(maturityDates)
     _yieldRate = [yieldRate]*len(maturityDates)                 #Yield Curve
     volatility = 2.52           #Annual Volatility in percent
-    intervalVolatility = [volatility]*len(maturityDates[:-1])
+    intervalVolatility = ([volatility/100]*len(maturityDates[:-1])*len(maturityDates[:-1]))
     bondPrices = [fv/(1 + y/100)**n for n, fv, y in zip(range(1,len(maturityDates)+1), _faceValue, _yieldRate)]
     capletPrices = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000]  #Caplet Prices
     riskFreeRate = 3            #Risk Free Rate in percent

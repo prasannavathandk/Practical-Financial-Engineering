@@ -1,14 +1,42 @@
 import numpy as np
 import pandas as pd
 import math 
+from scipy.stats import norm
 
-def volCalibration(capletVolatility):
+
+# black formular for caplet
+def BC(F, sigma, T, K, b):
+
+    # calculate d1 and d2
+    d1 = math.log(F/K) + (T/2) * sigma**2
+    d1 = d1 / (sigma * math.sqrt(T))
+
+    d2 = math.log(F/K) - (T/2) * sigma**2
+    d2 = d2 / (sigma * math.sqrt(T))
+
+    return b * (F* norm.cdf(d1) - K*norm.cdf(d2))
+
+
+def volCalibration(capletVolatility, forwardCurve = None):
 
     # construct output object
     M = len(capletVolatility)
     volMatrix = np.zeros((M, M))
-    period_volatility = []
 
+    # Objects to catch calculated values
+    period_volatility = []
+    prices = []
+
+    # Get bond prices for caplet pricing
+    if forwardCurve is None:
+        forwardCurve = [0.05]*M
+    bondPrices = (1 / (np.array(forwardCurve) + 1).cumprod()).tolist()
+
+    for i in range(M):
+        caplet_prices = [BC(F=forwardCurve[i], K=forwardCurve[i], T=(i+1), b=bondPrices[i], sigma=capletVolatility[i]) for i in range(M)]
+
+
+    # Calibrate the volatility 
     for i in range(M):
 
         if i == 0: # One period vol can be backed out from one period caplet
@@ -25,7 +53,8 @@ def volCalibration(capletVolatility):
 
         print(period_volatility)
         volMatrix[i, :len(period_volatility)] = list(reversed(period_volatility))
-    return volMatrix
+
+    return (volMatrix, caplet_prices)
 
 class PricingEngine:
 

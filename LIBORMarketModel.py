@@ -1,5 +1,7 @@
 from abc import abstractmethod
 import math
+
+import pandas as pd
 from IModel import ModelInterface
 from NumericalSolver import SolutionScheme
 import multiprocessing
@@ -64,11 +66,11 @@ class LIBORModel(ModelInterface):
         return self._vol
 
     @volatility.setter
-    def volatility(self, value):
+    def volatility(self, value: pd.DataFrame):
         self._vol = value
 
     def sigma(self, t, n):
-        return (self.timeGrid[t])*self.volatility[n]/100
+        return (self.timeGrid[t])*(self.volatility[n])
                 
     #Implementation of general drift
     @abstractmethod

@@ -24,8 +24,8 @@ def volCalibration(capletVolatility):
             period_volatility.append(new_cv)
 
         print(period_volatility)
-        volMatrix[i, :len
-
+        volMatrix[i, :len(period_volatility)] = list(reversed(period_volatility))
+    return pd.DataFrame(volMatrix)
 
 class PricingEngine:
 

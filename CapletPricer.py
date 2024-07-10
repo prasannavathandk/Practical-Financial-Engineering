@@ -18,7 +18,7 @@ class CapletPricing(BondPricing):
     
     def GPayoff(self, forwardRates: pd.Series, maturity: int) -> float:
         # print("SwapPricer::GPayoff")
-        print("SwapPricer::GPayoff: ", "forwardRates: ", forwardRates, "maturity: ", maturity)
+        #print("SwapPricer::GPayoff: ", "forwardRates: ", forwardRates, "maturity: ", maturity)
         forwardRates.name = "rate"
         forwardRates = forwardRates.apply(lambda x: max(x, 0))
         forwardRates = forwardRates.reset_index(drop=False)
@@ -26,7 +26,7 @@ class CapletPricing(BondPricing):
         notional = self._caplet['Notional']
         # print("SwapPricer::GPayoff: ", "fixed: ", fixed, "notional: ", notional)
         # print("SwapPricer::GPayoff: ", "instrument: ", instrument)
-        payoff = abs(self._caplet['Payoff'](forwardRates['rate'][maturity], forwardRates['rate'][maturity-1], self._caplet['Frequency']))
+        payoff = abs(self._caplet['Payoff'](forwardRates['rate'][maturity], forwardRates['rate'][0], self._caplet['Frequency']))
         # print("SwapPricer::GPayoff: ", "payoff: ", payoff)        
         return payoff*notional
 

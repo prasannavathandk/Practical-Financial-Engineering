@@ -108,4 +108,5 @@ def getInitialCurve(Maturities):
     ns = NelsonSiegel(0.3,0.4,12,1)
     ns.calibrate(curve)
 
-bondPrices =  ns.df_t([1,2])
+    zeroBondPrices = np.exp(-ns.d_rate(Maturities)* np.array(Maturities))
+    return zeroBondPrices

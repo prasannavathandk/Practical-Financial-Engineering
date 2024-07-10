@@ -4,6 +4,8 @@ import pandas as pd
 from scipy.stats import norm as std
 import numpy as np
 from NumericalSolver import SolutionScheme
+from Parameters import Parameters
+import Helper as hp
 
 class DerivativePricing:
 
@@ -12,7 +14,7 @@ class DerivativePricing:
         self._derivative = derivative
         self._config = {
             'Maturity' : self._derivative['Maturity'],
-            'Prices' : self._derivative['BondPricing']([100]*len(self._derivative['Maturity']), [10]*len(self._derivative['Maturity']), self._derivative['Maturity']),
+            'Prices' : self._derivative['BondPricing']([Parameters.faceValue]*len(self._derivative['Maturity']), [Parameters.yieldRate]*len(self._derivative['Maturity']), self._derivative['Maturity']),
             'Volatility' : [12]*(len(self._derivative['Maturity']) - 1),
             'Scale' : 1/self._derivative['Frequency']
         }
@@ -24,21 +26,6 @@ class DerivativePricing:
     @property
     def config(self):
         return self._config
-
-    def blackCapPrice(forward, strike, maturity, volatility, notional, b):
-        d1 = (np.log(forward / strike) + (((volatility**2)*maturity) / 2)) / (volatility * np.sqrt(maturity))
-        d2 = d1 - (volatility*np.sqrt(maturity))
-        price = notional * b * (forward*std.cdf(d1) - strike*std.cdf(d2))
-        return price
-
-    # def blackSwaptionPrice(discount, forward, strike, maturity, volatility, notional, riskFreeRate, frequency):
-    #     #print("AnalyticalPricer::blackSwaptionPrice: ",discount, forward, strike, maturity, volatility, notional, riskFreeRate, frequency)
-    #     PVBP = notional * discount
-    #     d1 = (np.log(forward / strike) + (((volatility**2)*maturity) / 2)) / (volatility * np.sqrt(maturity))
-    #     d2 = d1 - (volatility*np.sqrt(maturity))
-    #     price = PVBP * (forward*std.cdf(d1) - strike*std.cdf(d2))
-    #     print("AnalyticalPricer::blackSwaptionPrice: ",PVBP, forward, d1, d2, std.cdf(d1), std.cdf(d2), price)
-    #     return price 
 
     @abstractmethod
     def GPayoff(self):
@@ -60,13 +47,13 @@ class DerivativePricing:
 
         def micro(samplePoints: pd.Series) -> float:
             #print("DerivativePricing::micro")
-            print("DerivativePricing::micro", samplePoints.head())
+            #print("DerivativePricing::micro", samplePoints.head())
             termValues = samplePoints.iloc[-1]
             discountFactor = self.discountFactor(list(termValues.values), None)
-            print("DerivativePricing::micro: ", "discountFactor: ", discountFactor)
+            #print("DerivativePricing::micro: ", "discountFactor: ", discountFactor)
             price = np.array([self.GPayoff(forwardRates=pd.concat([pd.Series([samplePoints.iloc[0][ind]]), termValues]), maturity=int(ind)) for ind in termValues.index])
             #print("DerivativePricing::micro: ", "price: ", price)
-            PVPrice = np.multiply(price, discountFactor)
+            PVPrice = pd.Series(np.multiply(price, discountFactor))
             #print("DerivativePricing::micro: ", "PVPrice: ", PVPrice)
             return PVPrice
         
@@ -78,6 +65,8 @@ class DerivativePricing:
                 lambda x: x.iloc[int(x.name)],
                 axis=0
             )
+            # hp.plotDF(samplePath, title="Curve-SpotMeasure-General", clear=False)
+            # hp.showPLot()
             #print("DerivativePricing::meso: ", "_terRate: ", _terRate)
             terRate = pd.Series(_terRate, index=samplePath.columns)
             terRate.name = -1
@@ -87,8 +76,7 @@ class DerivativePricing:
             objs = [samplePath, terRate]
             )
             #print("DerivativePricing::meso: ", "samplePath: ", samplePath.iloc[-1])
-            price = micro(samplePoints=samplePath)
-            return pd.Series(price)
+            return micro(samplePoints=samplePath)             
         
         def macro(samplePaths: pd.DataFrame) -> None:
             #print("DerivativePricing::macro")
@@ -96,14 +84,15 @@ class DerivativePricing:
             #print("DerivativePricing::macro: ", "price: ", price)
             return np.array(price.values)
 
-        simulation = self.simulate(volatility)
-        #print("DerivativePricing::simulatedPricing: ", simulation.head())
-        price = macro(simulation)
+        price = macro(self.simulate(volatility))
+        for _ in range(Parameters.epoch):
+            price = np.vstack([price, macro(self.simulate(volatility))])
+        price = price.mean(axis=0)
         return price
 
     def simulate(self, volatility: np.array):
         #print("DerivativePricing::simulate")
         simulator = self.SimulatorMeta(volatility)
         forwardCurve = simulator.simulate(epoch=0).analyze()
-        print(forwardCurve.head())
-        return forwardCurve     
+        #print(forwardCurve.head())
+        return forwardCurve

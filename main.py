@@ -74,17 +74,20 @@ def main():
         calVol = calVol.round(4)
         print(calVol)
         
-        df = [trigger(ep, calVol) for ep in range(Parameters.epoch)]
-        print("----------------------------------")
-        print("Result Summary:")
-        output = pd.concat(df).sort_index()
-        output.info()
-        output.describe(include='all')
-        output.to_csv("Simulation-SpotMeasure-General.csv")
-        plotOut = output.groupby('time').mean()
-        print(plotOut.tail())
-        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
-        hp.showPLot()
+        # df = [trigger(ep, calVol) for ep in range(Parameters.epoch)]
+        # print("----------------------------------")
+        # print("Result Summary:")
+        # output = pd.concat(df).sort_index()
+        # output.info()
+        # output.describe(include='all')
+        # output.to_csv("Simulation-SpotMeasure-General.csv")
+        # plotOut = output.groupby('time').mean()
+        # print(plotOut.tail())
+        # hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
+        # hp.showPLot()
+
+        pricer = CapletPricing(derivative, LIBORSim)
+        print(pricer.simulatedPricing(volatility=calVol))
          
     print("Simulation complete :) ...", timer.tock)
 

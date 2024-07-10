@@ -39,7 +39,7 @@ class Parameters:
             'sigma': [10]*9,
             'ForwardRate': [0.29067, 0.69631, 1.307513, 2.339118, 2.293654, 0.267757, 0.130832, 2.610498, 5.584448],  # Forward Rate at time of exercise
             'RiskFreeRate': 3,
-            'Market':[0.95141468, 0.91125283, 0.87517107, 0.84101834, 0.80781669, 0.7752033 , 0.74311992, 0.71164181, 0.68088708, 0.65097184],
+            'MarketBond':[0.95141468, 0.91125283, 0.87517107, 0.84101834, 0.80781669, 0.7752033 , 0.74311992, 0.71164181, 0.68088708, 0.65097184],
             'Price': None,
             'Payoff': lambda floating, fixed, period: max((floating - fixed), 0) * (period),
             'BondPricing': lambda faceValue, yieldRate, maturity: [fv/(1 + y/100)**n for n, fv, y in zip(maturity, faceValue, yieldRate)]

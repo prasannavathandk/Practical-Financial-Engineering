@@ -46,13 +46,9 @@ class Calibrator:
 
     def volCalibration(self, capletVolatility):
 
-        maturity = Parameters.derivatives['Caplet']['Maturity']
-        faceValue = [Parameters.faceValue]*len(maturity)
-        yieldRate = [Parameters.yieldRate]*len(maturity)
-        bondPricing = Parameters.derivatives['Caplet']['BondPricing']
-        forwardCurve = hp.initCondition(bondPricing(maturity, faceValue, yieldRate), maturity).flatten()
-        forwardCurve = None
-        print(forwardCurve)
+        derivative = Parameters.derivatives['Caplet']
+        forwardCurve = hp.initCondition(derivative['MarketBond'], derivative['Maturity']).flatten()
+        #print(forwardCurve)
         # construct output object
         M = len(capletVolatility)
         volMatrix = np.zeros((M, M))

@@ -13,9 +13,9 @@ from CapletPricer import CapletPricing
 
 nofCores = multiprocessing.cpu_count()
 
-def trigger(epoch, volatilities = Parameters.intervalVolatility):
+def trigger(epoch, maturities=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatilities = Parameters.intervalVolatility):
     print("---Epoch %i started---" %(epoch+1))
-    simulator = LIBORSim(maturity=np.array(Parameters.maturityDates), prices=np.array(Parameters.bondPrices), volatility=volatilities, scale = Parameters.tradingDays, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
+    simulator = LIBORSim(maturity=maturities, prices=prices, volatility=volatilities, scale = Parameters.tradingDays, measure=Parameters.measure, type=Parameters.scheme, iter = Parameters.batch(nofCores))
     df = simulator.simulate(epoch=epoch).analyze()
     df["epoch"] = epoch+1 
     df.set_index('epoch', append=True, inplace=True)  
@@ -74,20 +74,25 @@ def main():
         calVol = calVol.round(4)
         print(calVol)
         
-        # df = [trigger(ep, calVol) for ep in range(Parameters.epoch)]
-        # print("----------------------------------")
-        # print("Result Summary:")
-        # output = pd.concat(df).sort_index()
-        # output.info()
-        # output.describe(include='all')
-        # output.to_csv("Simulation-SpotMeasure-General.csv")
-        # plotOut = output.groupby('time').mean()
-        # print(plotOut.tail())
-        # hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
-        # hp.showPLot()
+        df = [trigger(ep, derivative['Maturity'], derivative['MarketBond'], calVol) for ep in range(Parameters.epoch)]
+        print("----------------------------------")
+        print("Result Summary:")
+        output = pd.concat(df).sort_index()
+        output.info()
+        output.describe(include='all')
+        output.to_csv("Simulation-Calibrated-General.csv")
+        plotOut = output.groupby('time').mean()
+        print(plotOut.tail())
+        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
+        hp.showPLot()
 
         pricer = CapletPricing(derivative, LIBORSim)
-        print(pricer.simulatedPricing(volatility=calVol))
+        simulatedPrice = pricer.simulatedPricing(volatility=calVol)
+        analyticalPrice = np.array(capPrices)*derivative['Notional']
+        Error = np.abs(simulatedPrice - analyticalPrice)
+        df_error = pd.DataFrame.from_dict({'Simulated Price': simulatedPrice, 'Analytical Price': analyticalPrice, 'Error': Error})
+        df_error.to_csv("Price.csv")
+        print("Simulation-Result: ", simulatedPrice, "Analytical-Result: ", analyticalPrice, "Error: ", Error)
          
     print("Simulation complete :) ...", timer.tock)
 

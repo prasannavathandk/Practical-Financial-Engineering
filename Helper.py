@@ -1,10 +1,15 @@
+import contextlib
 import functools
+import math
+import os
+import sys
 import threading
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time, datetime
 from Parameters import Parameters 
+from scipy.stats import norm
 
 #a vector of standard normal variables
 def stdNormal(shape):
@@ -44,11 +49,9 @@ class timer:
 def unitTest(myClass):
     pass
 
-def discretize(arr):
+def discretize(arr, scale=1):
     arr = np.concatenate([[0], np.sort(arr)])
-    arr = [i*(1/Parameters.tradingDays) for i in range(arr[-1]*Parameters.tradingDays + 1)]
-    for _ in range(Parameters.scale-1):
-        arr = np.sort(np.concatenate([arr,np.add(arr[:-1],np.diff(arr)/2)]))
+    arr = [i*(1/scale) for i in range(int(arr[-1]*scale + 1))]
     return arr
 
 # Mapping function to convert maturity to years
@@ -58,3 +61,24 @@ def maturity_to_years(maturity):
     elif 'year' in maturity:
         return int(maturity.split()[0])
     return None
+
+@contextlib.contextmanager
+def HidePrints():
+    with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+        yield 
+
+def initCondition(bondPrices, maturities):
+    def initCond(maturityIndex):
+        return ((bondPrices[maturityIndex]-bondPrices[maturityIndex+1])/((maturities[maturityIndex+1]-maturities[maturityIndex])*bondPrices[maturityIndex+1]))
+    return np.array([initCond(T) for T in range(len(maturities)-1)])
+
+def BC(F, sigma, T, K, b):
+
+    # calculate d1 and d2
+    d1 = math.log(F/K) + (T/2) * sigma**2
+    d1 = d1 / (sigma * math.sqrt(T))
+
+    d2 = math.log(F/K) - (T/2) * sigma**2
+    d2 = d2 / (sigma * math.sqrt(T))
+
+    return b * (F* norm.cdf(d1) - K*norm.cdf(d2))               

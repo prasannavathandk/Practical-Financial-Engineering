@@ -162,3 +162,5 @@ cython_debug/
 test.ipynb
 Test .html
 test.R
+.vscode/launch.json
+.gitignore

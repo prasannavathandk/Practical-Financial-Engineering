@@ -10,15 +10,16 @@ import Helper as hp
 
 class LIBORSim(SolutionScheme):
 
-    def __init__(self, maturity, prices, measure=0, type=0, iter = 10):
+    def __init__(self, maturity, prices, volatility: np.array, scale = Parameters.tradingDays, measure=0, type=0, iter = 10):
         if(measure == 1):
-            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices)
+            model=FM.ForwardMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         else:    
-            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices)
+            model=SM.SpotMeasure(type = type, maturity=maturity, prices=prices, scale=scale)
         super().__init__(model=model, iter=iter)
-        self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, row=maturity, column=discretizedTime
+        model.volatility = np.array(volatility).reshape(len(model.maturityGrid)-1, len(model.maturityGrid)-1)
+        self._sm = np.zeros((self.iter, len(model.timeGrid), len(model.maturityGrid)-1)) #depth=iteration, column=discretizedTime, row=maturity
         self._ran = model.distribution()(self._sm.shape)
-        self.epoch = 0 
+        self.epoch = 0
         print("Pre-Processing done!") 
 
     @property 
@@ -40,9 +41,6 @@ class LIBORSim(SolutionScheme):
     def popMatrix(self, result):
         self.matrix[result[0]] = result[1] 
 
-    def initCondition(self,maturityIndex):
-        return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
-
     def subEngine(self, iter):
         print("Processing iteration:", self.epoch*Parameters.batch(multiprocessing.cpu_count()) + iter + 1)
         return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
@@ -62,16 +60,17 @@ class LIBORSim(SolutionScheme):
     def simulate(self, epoch = 0):
         print(self.matrix.shape)
         self.epoch = epoch
-        self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
+        self.matrix[:,0,:] = hp.initCondition(self.model.bondPrices, self.model.maturityGrid).flatten() #[self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
         print("Processing done!") 
+        return self
 
      #Summary from the sample paths
     def analyze(self, epoch = 0):
         self.epoch = epoch
-        self.matrix = np.mean(self.matrix, axis=0)
-        df = pd.DataFrame(self.matrix, columns=["T" + str(T) for T in range(1, len(self.model.maturityGrid))], index=self.model.timeGrid)
-        df.index.name = "Time"
-        print("Post-Processing done!") 
+        matrix = np.reshape(self.matrix, (-1, self.matrix.shape[-1]))
+        tuples = [(i, j) for j in self.model.timeGrid for i in range(1, self.iter + 1)]
+        index = pd.MultiIndex.from_tuples(tuples, names=['iteration', 'time'])
+        df = pd.DataFrame(matrix, columns=self.model.maturityGrid[:-1], index=index.sortlevel(level='iteration')[0])
+        print("Post-Processing done!")
         return df
-        

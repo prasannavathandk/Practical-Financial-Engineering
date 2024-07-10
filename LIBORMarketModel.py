@@ -71,8 +71,7 @@ class LIBORModel(ModelInterface):
 
     def sigma(self, t, n):
         #print("LIBORModel.sigma", t, n)
-        t_ = self.timeGrid[t+1] - math.floor(self.timeGrid[t+1])
-        return (1)*(self.volatility[n, int(math.floor(self.timeGrid[t]))])
+        return (self.volatility[n, int(math.floor(self.timeGrid[t]))])
                 
     #Implementation of general drift
     @abstractmethod

@@ -61,31 +61,17 @@ def main():
         calibrator = Calibrator(None)
         print(derivative['Volatility'])
         calVol = calibrator.volCalibration(capletVolatility = derivative['Volatility'])[0]
-        capPrices = calibrator.volCalibration(capletVolatility = derivative['Volatility'])[1]
+        capPrices = calibrator.volCalibration(capletVolatility = derivative['Volatility'])[1]        
+        calVol = calVol/100
+        calVol = calVol.round(4)
         print("main: calVol = ")
         print(calVol)
         print("main: capPrices = ")
         print(capPrices)
-
-
-        print("----------------------------------")
-        print("Post Calibration")
-        calVol = calVol/100
-        calVol = calVol.round(4)
-        print(calVol)
         
-        df = [trigger(ep, derivative['Maturity'], derivative['MarketBond'], calVol) for ep in range(Parameters.epoch)]
         print("----------------------------------")
-        print("Result Summary:")
-        output = pd.concat(df).sort_index()
-        output.info()
-        output.describe(include='all')
-        output.to_csv("Simulation-Calibrated-General.csv")
-        plotOut = output.groupby('time').mean()
-        print(plotOut.tail())
-        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
-        hp.showPLot()
-
+        print("Caplet Pricing")        
+        
         pricer = CapletPricing(derivative, LIBORSim)
         simulatedPrice = pricer.simulatedPricing(volatility=calVol)
         analyticalPrice = np.array(capPrices)*derivative['Notional']
@@ -93,7 +79,19 @@ def main():
         df_error = pd.DataFrame.from_dict({'Simulated Price': simulatedPrice, 'Analytical Price': analyticalPrice, 'Error': Error})
         df_error.to_csv("Price.csv")
         print("Simulation-Result: ", simulatedPrice, "Analytical-Result: ", analyticalPrice, "Error: ", Error)
-         
+
+        print("----------------------------------")
+        print("Simulation with Calibrated Volatility")
+        df = [trigger(ep, derivative['Maturity'], derivative['MarketBond'], calVol) for ep in range(Parameters.epoch)]
+        print("----------------------------------")
+        print("Result Summary:")
+        output = pd.concat(df).sort_index()
+        output.info()
+        output.describe(include='all')
+        output = output.groupby('time').mean()
+        output.to_csv("Simulation-Calibrated-General.csv")
+        hp.plotDF(output, title="Curve-SpotMeasure-General", clear=False)
+        hp.showPLot()
     print("Simulation complete :) ...", timer.tock)
 
 if __name__ == "__main__":

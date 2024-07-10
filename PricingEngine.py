@@ -25,8 +25,7 @@ def volCalibration(capletVolatility, forwardCurve = None):
 
     # Objects to catch calculated values
     period_volatility = []
-    prices = []
-
+    
     # Get bond prices for caplet pricing
     if forwardCurve is None:
         forwardCurve = [0.05]*M

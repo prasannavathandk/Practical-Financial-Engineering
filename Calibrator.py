@@ -62,11 +62,11 @@ class Calibrator:
         # Get bond prices for caplet pricing
         if forwardCurve is None:
             forwardCurve = [0.05]*M
-        bondPrices = (1 / (np.array(forwardCurve) + 1).cumprod()).tolist()
+            bondPricing = (1 / (np.array(forwardCurve) + 1).cumprod()).tolist()
 
         for i in range(M):
             tmp_cv = np.array(capletVolatility) / 100
-            caplet_prices = [hp.BC(F=forwardCurve[i], K=forwardCurve[i], T=(i+1), b=bondPrices[i], sigma=tmp_cv[i]) for i in range(M)]
+            caplet_prices = [hp.BC(F=forwardCurve[i], K=forwardCurve[i], T=(i+1), b=bondPricing[i], sigma=tmp_cv[i]) for i in range(M)]
 
 
         # Calibrate the volatility 

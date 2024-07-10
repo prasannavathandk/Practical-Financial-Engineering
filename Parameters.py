@@ -82,7 +82,7 @@ class Parameters:
     derivative = derivatives['Swaption']
         
     #Simulation Parameters
-    epoch = 2        #Number of epochs or batches to run
+    epoch = 5      #Number of epochs or batches to run
     batch = lambda core: 5*core        #Number of iterations per epoch = Number of sample paths
     parallel = True     #Flag to run the simulation in parallel
     

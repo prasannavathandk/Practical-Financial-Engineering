@@ -25,7 +25,7 @@ def volCalibration(capletVolatility, forwardCurve = None):
 
     # Objects to catch calculated values
     period_volatility = []
-    
+
     # Get bond prices for caplet pricing
     if forwardCurve is None:
         forwardCurve = [0.05]*M
@@ -70,6 +70,7 @@ class PricingEngine:
             'ZeroCouponBond': self.ZerocCouponBond,
             'VanillaCouponBond': self.VanillaCouponBond,
             'Swaption': self.Swaption,
+            'Caplet':self.Caplet
         }
         return methods
 
@@ -94,7 +95,7 @@ class PricingEngine:
           
         
                 Price = Price + DiscountFactor * CashFlow
-                print(Price)
+                #print(Price)
             Prices.append(Price)
             #print('Pricing run for iteration:', k, ' finished with price:', Price)
 
@@ -102,6 +103,19 @@ class PricingEngine:
 
         return Price
     
+
+    def Caplet(self, K:float, T: float, Nominal: float, timepoint: float, iteration: int):
+        # Check if Maturity date is in timepoints
+        if T not in self.intervals.cumsum():
+            raise ValueError("Intervalls not aligned with Maturity Date")
+
+        if T == timepoint:
+            mask = (self.simulation.epoch == iteration) & (self.simulation.Time == T)
+            rate = self.simulation[mask].iloc[:, 2:].values[0][T]
+            return Nominal*max(rate-K, 0)
+        else:
+            return 0
+
     def ZerocCouponBond(self, T: float, Nominal: float, timepoint: float, iteration: int):
 
         # Check if Maturity date is in timepoints

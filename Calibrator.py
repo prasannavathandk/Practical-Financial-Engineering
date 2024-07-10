@@ -3,6 +3,8 @@ from BondPricer import BondPricing
 import Helper as hp
 from scipy.optimize import minimize
 
+from Parameters import Parameters
+
 class Calibrator:
     def __init__(self, pricer : BondPricing):
         print("Calibrator::init")
@@ -44,11 +46,29 @@ class Calibrator:
 
     def volCalibration(self, capletVolatility):
 
+        maturity = Parameters.derivatives['Caplet']['Maturity']
+        faceValue = [Parameters.faceValue]*len(maturity)
+        yieldRate = [Parameters.yieldRate]*len(maturity)
+        bondPricing = Parameters.derivatives['Caplet']['BondPricing']
+        forwardCurve = hp.initCondition(bondPricing(maturity, faceValue, yieldRate), maturity).flatten()
         # construct output object
         M = len(capletVolatility)
         volMatrix = np.zeros((M, M))
-        period_volatility = []
 
+        # Objects to catch calculated values
+        period_volatility = []
+        prices = []
+
+        # Get bond prices for caplet pricing
+        if forwardCurve is None:
+            forwardCurve = [0.05]*M
+        bondPrices = (1 / (np.array(forwardCurve) + 1).cumprod()).tolist()
+
+        for i in range(M):
+            caplet_prices = [hp.BC(F=forwardCurve[i], K=forwardCurve[i], T=(i+1), b=bondPrices[i], sigma=capletVolatility[i]) for i in range(M)]
+
+
+        # Calibrate the volatility 
         for i in range(M):
 
             if i == 0: # One period vol can be backed out from one period caplet
@@ -63,8 +83,7 @@ class Calibrator:
                 new_cv = (T_i*(cv**2) - sum(cvs))**(0.5)
                 period_volatility.append(new_cv)
 
-            print(period_volatility)
+            #print(period_volatility)
             volMatrix[i, :len(period_volatility)] = list(reversed(period_volatility))
-        return volMatrix    
-    
-    
+
+        return (volMatrix, caplet_prices)

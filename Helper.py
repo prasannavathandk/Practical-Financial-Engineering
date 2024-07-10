@@ -1,5 +1,6 @@
 import contextlib
 import functools
+import math
 import os
 import sys
 import threading
@@ -8,6 +9,7 @@ import numpy as np
 import pandas as pd
 import time, datetime
 from Parameters import Parameters 
+from scipy.stats import norm
 
 #a vector of standard normal variables
 def stdNormal(shape):
@@ -63,4 +65,20 @@ def maturity_to_years(maturity):
 @contextlib.contextmanager
 def HidePrints():
     with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-        yield        
+        yield 
+
+def initCondition(bondPrices, maturities):
+    def initCond(maturityIndex):
+        return ((bondPrices[maturityIndex]-bondPrices[maturityIndex+1])/((maturities[maturityIndex+1]-maturities[maturityIndex])*bondPrices[maturityIndex+1]))
+    return np.array([initCond(T) for T in range(len(maturities)-1)])
+
+def BC(F, sigma, T, K, b):
+
+    # calculate d1 and d2
+    d1 = math.log(F/K) + (T/2) * sigma**2
+    d1 = d1 / (sigma * math.sqrt(T))
+
+    d2 = math.log(F/K) - (T/2) * sigma**2
+    d2 = d2 / (sigma * math.sqrt(T))
+
+    return b * (F* norm.cdf(d1) - K*norm.cdf(d2))               

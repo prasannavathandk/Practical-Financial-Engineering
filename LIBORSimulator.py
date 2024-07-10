@@ -41,9 +41,6 @@ class LIBORSim(SolutionScheme):
     def popMatrix(self, result):
         self.matrix[result[0]] = result[1] 
 
-    def initCondition(self,maturityIndex):
-        return ((self.model.bondPrices[maturityIndex]-self.model.bondPrices[maturityIndex+1])/((self.model.maturityGrid[maturityIndex+1]-self.model.maturityGrid[maturityIndex])*self.model.bondPrices[maturityIndex+1]))
-
     def subEngine(self, iter):
         print("Processing iteration:", self.epoch*Parameters.batch(multiprocessing.cpu_count()) + iter + 1)
         return (iter, [Solver.SamplePath(iter=iter, ti=ti, SDE=self.model.SDE, forwardCurve=self.matrix[iter,ti-1], random=self.random[iter,ti], matrix=self.matrix[iter,ti]) for ti in range(self.matrix.shape[1])])
@@ -63,7 +60,7 @@ class LIBORSim(SolutionScheme):
     def simulate(self, epoch = 0):
         print(self.matrix.shape)
         self.epoch = epoch
-        self.matrix[:,0,:] = [self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
+        self.matrix[:,0,:] = hp.initCondition(self.model.bondPrices, self.model.maturityGrid).flatten() #[self.initCondition(T) for T in range(len(self.model.maturityGrid)-1)]
         self.execute()
         print("Processing done!") 
         return self

@@ -41,17 +41,17 @@ def main():
         print("Simulation initiate...", timer.tick) 
         timer.start()   
 
-        df = [trigger(ep) for ep in range(Parameters.epoch)]
-        print("----------------------------------")
-        print("Result Summary:")
-        output = pd.concat(df).sort_index()
-        output.info()
-        output.describe(include='all')
-        output.to_csv("Simulation-SpotMeasure-General.csv")
-        plotOut = output.groupby('time').mean()
-        print(plotOut.head())
-        hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
-        hp.showPLot()
+        # df = [trigger(ep) for ep in range(Parameters.epoch)]
+        # print("----------------------------------")
+        # print("Result Summary:")
+        # output = pd.concat(df).sort_index()
+        # output.info()
+        # output.describe(include='all')
+        # output.to_csv("Simulation-SpotMeasure-General.csv")
+        # plotOut = output.groupby('time').mean()
+        # print(plotOut.head())
+        # hp.plotDF(plotOut, title="Curve-SpotMeasure-General", clear=False)
+        # hp.showPLot()
 
         print("----------------------------------")
         print("Volatitlity Calibration")
@@ -60,13 +60,18 @@ def main():
         # print(pricer.simulatedPricing(volatility=pricer.config['Volatility']))
         calibrator = Calibrator(None)
         print(derivative['Volatility'])
-        calVol = calibrator.volCalibration(capletVolatility = derivative['Volatility'])
+        calVol = calibrator.volCalibration(capletVolatility = derivative['Volatility'])[0]
+        capPrices = calibrator.volCalibration(capletVolatility = derivative['Volatility'])[1]
+        print("main: calVol = ")
+        print(calVol)
+        print("main: capPrices = ")
+        print(capPrices)
 
 
         print("----------------------------------")
         print("Post Calibration")
         calVol = calVol/100
-        calVol = calVol.round(2)
+        calVol = calVol.round(4)
         print(calVol)
         
         df = [trigger(ep, calVol) for ep in range(Parameters.epoch)]

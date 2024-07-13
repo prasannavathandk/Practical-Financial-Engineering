@@ -1,6 +1,6 @@
 # PFE-2024
 
-The Simulation is as part of the course Practical Financial Engineering 2024 at Ulm University, in which our chosen topic was "LIBOR MArket Model".
+The Simulation is as part of the course Practical Financial Engineering 2024 at Ulm University, in which our chosen topic was "LIBOR MArket Model", based on the reference book- "Monte Carlo Methods in Financial Engineering, Paul Glasserman"
 
 The goal was to simulate Forward Rate Curves, Calibrate it to the Market and use to price Illiquid interest rate derivatives.
 
